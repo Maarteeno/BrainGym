@@ -12,10 +12,9 @@
       background-size: 400% 400%;
       animation: gradientBG 12s ease infinite;
       display: flex;
-      justify-content: center;
+      flex-direction: column;
       align-items: center;
       min-height: 100vh;
-      flex-direction: column;
       color: white;
       padding: 15px;
       box-sizing: border-box;
@@ -36,32 +35,45 @@
       from { text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; }
       to   { text-shadow: 0 0 20px #00ddff, 0 0 40px #00ddff; }
     }
+
+    /* Contenedor principal */
     .container {
       display: flex;
-      flex-direction: row; /* Desktop: lado a lado */
-      justify-content: center;
-      align-items: flex-start;
-      gap: 30px;
+      flex-direction: column;
+      align-items: center;
       background: rgba(255, 255, 255, 0.08);
       border-radius: 20px;
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
       padding: 20px;
       backdrop-filter: blur(8px);
-      max-width: 1100px;
+      max-width: 1000px;
       width: 100%;
+      gap: 25px;
     }
+
+    /* Sección de ruleta + botones */
+    .top-section {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
     #wheelCanvas {
       border-radius: 50%;
       box-shadow: 0 0 15px rgba(0,0,0,0.6);
       max-width: 100%;
       height: auto;
     }
+
     .wheel-wrapper {
       position: relative;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+
     .selector {
       width: 0;
       height: 0;
@@ -74,18 +86,13 @@
       transform: translateX(-50%);
       filter: drop-shadow(0 0 5px black);
     }
+
+    /* Botones */
     .buttons {
-      margin-top: 20px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 12px;
-    }
-    .row {
-      display: flex;
       gap: 10px;
-      flex-wrap: wrap;
-      justify-content: center;
+      align-items: stretch;
     }
     button {
       padding: 10px 20px;
@@ -105,6 +112,8 @@
       background: linear-gradient(90deg, #0d47a1, #1976d2) !important;
       box-shadow: 0 0 10px #42a5f5;
     }
+
+    /* Panel de resultados */
     .info-panel {
       text-align: center;
       animation: fadeIn 1s ease;
@@ -112,7 +121,7 @@
       opacity: 0;
       transform: translateY(20px);
       transition: all 0.6s ease;
-      flex: 1;
+      width: 100%;
     }
     .info-panel.show {
       opacity: 1;
@@ -151,6 +160,15 @@
       margin: 5px;
       font-size: 14px;
     }
+    .pill a {
+      color: #fff;
+      text-decoration: none;
+    }
+    .pill a:hover {
+      text-decoration: underline;
+    }
+
+    /* Historial */
     .history-panel {
       margin-top: 20px;
       max-height: 150px;
@@ -161,6 +179,7 @@
       font-size: 14px;
       text-align: left;
     }
+
     /* Marca de agua */
     .watermark {
       position: absolute;
@@ -172,6 +191,7 @@
       pointer-events: none;
       user-select: none;
     }
+
     /* Copyright */
     footer {
       margin-top: 15px;
@@ -179,23 +199,21 @@
       color: rgba(255,255,255,0.6);
       text-align: center;
     }
+
     /* 📱 Adaptación móvil */
     @media (max-width: 768px) {
-      .container {
-        flex-direction: column; /* En móviles se apilan */
-        align-items: center;
-        text-align: center;
+      .top-section {
+        flex-direction: column;
       }
       #wheelCanvas {
-        width: 90vw;  /* Más grande en móvil */
+        width: 90vw;
         height: auto;
       }
-      .info-panel {
-        margin-top: 20px;
-        font-size: 18px;
-      }
-      .country-name {
-        font-size: 22px;
+      .buttons {
+        width: 100%;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
       }
     }
   </style>
@@ -203,20 +221,18 @@
 <body>
   <h1>🌍 Gastronomía Mundial</h1>
   <div class="container">
-    <!-- Ruleta izquierda en desktop / arriba en móvil -->
-    <div class="wheel-wrapper">
-      <div class="selector"></div>
-      <canvas id="wheelCanvas" width="350" height="350"></canvas>
+    <!-- Ruleta + botones -->
+    <div class="top-section">
+      <div class="wheel-wrapper">
+        <div class="selector"></div>
+        <canvas id="wheelCanvas" width="350" height="350"></canvas>
+      </div>
       <div class="buttons">
         <button id="spinButton">🎡 ¡Girar!</button>
-        <div class="row">
-          <button id="historyButton">📜 Ver historial</button>
-          <button id="clearHistory">🧹 Borrar historial</button>
-        </div>
-        <div class="row">
-          <button id="resetWheel">🔄 Reiniciar ruleta</button>
-          <button id="toggleMode">🎲 Modo sin repetición</button>
-        </div>
+        <button id="historyButton">📜 Ver historial</button>
+        <button id="clearHistory">🧹 Borrar historial</button>
+        <button id="resetWheel">🔄 Reiniciar ruleta</button>
+        <button id="toggleMode">🎲 Modo sin repetición</button>
       </div>
     </div>
     <!-- Panel de resultados -->
@@ -235,7 +251,7 @@
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
 
   <script>
-    let countries = [
+    const countries = [
       {name:"España",continent:"Europa",region:"Sur",code:"es",foods:["Paella","Jamón ibérico"],drinks:["Sangría","Cava"]},
       {name:"Perú",continent:"América",region:"Sur",code:"pe",foods:["Ceviche","Lomo saltado"],drinks:["Pisco Sour","Chicha morada"]},
       {name:"México",continent:"América",region:"Norte",code:"mx",foods:["Tacos","Mole"],drinks:["Tequila","Margarita"]},
@@ -356,6 +372,10 @@
       requestAnimationFrame(animate);
     }
 
+    function makeLink(term) {
+      return `<a href="https://www.google.com/search?q=${encodeURIComponent(term + ' receta')}" target="_blank">${term}</a>`;
+    }
+
     function showCountryInfo(country) {
       infoPanel.innerHTML = `
         <div class="info-header">
@@ -364,11 +384,11 @@
         </div>
         <p>${country.continent} – ${country.region}</p>
         <h3>🍽️ Comidas típicas</h3>
-        <div class="pill">${country.foods[0]}</div>
-        <div class="pill">${country.foods[1]}</div>
+        <div class="pill">${makeLink(country.foods[0])}</div>
+        <div class="pill">${makeLink(country.foods[1])}</div>
         <h3>🥂 Bebidas típicas</h3>
-        <div class="pill">${country.drinks[0]}</div>
-        <div class="pill">${country.drinks[1]}</div>
+        <div class="pill">${makeLink(country.drinks[0])}</div>
+        <div class="pill">${makeLink(country.drinks[1])}</div>
       `;
     }
 
