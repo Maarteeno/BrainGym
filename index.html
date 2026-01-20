@@ -3,21 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arcade Mental 5.0</title>
+    <title>Brain Gym 7.0</title>
     <style>
         :root {
-            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
             --card-bg: rgba(255, 255, 255, 0.95);
-            --primary: #5c6bc0;
-            --secondary: #26a69a;
-            --accent: #ef5350;
-            --text: #37474f;
+            --text: #2d3436;
+            --text-light: #636e72;
+            --primary: #6c5ce7;
+            --secondary: #00cec9;
+            --accent: #ff7675;
+            --success: #00b894;
+            --shadow: 0 8px 30px rgba(0,0,0,0.12);
             --radius: 24px;
-            --shadow: 0 10px 40px -10px rgba(0,0,0,0.15);
+        }
+
+        /* DARK MODE */
+        body.dark-mode {
+            --bg-gradient: linear-gradient(135deg, #2d3436 0%, #000000 100%);
+            --card-bg: rgba(30, 39, 46, 0.95);
+            --text: #dfe6e9;
+            --text-light: #b2bec3;
+            --shadow: 0 8px 30px rgba(0,0,0,0.5);
         }
 
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
             background: var(--bg-gradient);
             color: var(--text);
             margin: 0;
@@ -25,15 +36,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px;
+            padding: 15px;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            transition: background 0.5s;
         }
 
         .app {
             background: var(--card-bg);
             width: 100%;
-            max-width: 500px; /* Ancho máximo ideal para móvil */
+            max-width: 500px;
             min-height: 90vh;
             border-radius: var(--radius);
             box-shadow: var(--shadow);
@@ -41,13 +53,14 @@
             flex-direction: column;
             overflow: hidden;
             position: relative;
+            transition: background 0.3s, color 0.3s;
         }
 
         .screen {
             display: none;
             flex-direction: column;
             align-items: center;
-            padding: 15px;
+            padding: 20px;
             width: 100%;
             height: 100%;
             box-sizing: border-box;
@@ -55,209 +68,192 @@
             overflow-y: auto;
         }
         .screen.active { display: flex; }
-
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        h1, h2 { margin: 0 0 15px 0; text-align: center; color: var(--text); }
-        h1 { font-size: 2rem; background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-        /* BOTONES */
+        h1 { margin: 0 0 5px 0; font-size: 2.2rem; background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-align: center;}
+        h2 { font-size: 1.2rem; color: var(--text); margin: 0; text-align: left; flex: 1; }
+        
         .btn {
-            background: white;
-            border: 1px solid rgba(0,0,0,0.05);
+            background: var(--card-bg);
+            border: 1px solid rgba(128,128,128,0.2);
             color: var(--text);
-            padding: 16px;
-            border-radius: 14px;
+            padding: 18px;
+            border-radius: 16px;
             font-size: 1.1rem;
             font-weight: 700;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 10px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 6px rgba(0,0,0,0.05);
             transition: transform 0.2s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 12px;
         }
-        .btn:active { transform: scale(0.97); background: #f5f5f5; }
-        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 15px -5px rgba(92, 107, 192, 0.4); }
-        .btn-sm { width: auto; padding: 8px 16px; font-size: 0.9rem; margin: 0; height: 36px;}
+        .btn:active { transform: scale(0.97); }
+        .btn-primary { background: var(--primary); color: white; border: none; box-shadow: 0 5px 15px rgba(108, 92, 231, 0.4); }
         
-        .nav { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
-        .timer { font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; color: var(--primary); }
-
-        /* --- SOPA DE LETRAS (12x12) --- */
-        #sopa-grid {
-            display: grid;
-            grid-template-columns: repeat(12, 1fr); /* 12x12 equilibra cantidad y tamaño */
-            gap: 2px;
-            background: transparent;
-            width: 100%;
-            aspect-ratio: 1;
-            touch-action: none; 
-            margin-bottom: 15px;
+        /* Nav Buttons */
+        .btn-icon {
+            width: 40px; height: 40px; border-radius: 12px; border: none;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; cursor: pointer; margin-left: 8px;
+            transition: background 0.2s;
         }
-        .cell {
-            background: #f4f6f8;
-            border-radius: 6px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: 800;
-            font-size: 1.1rem; /* Tamaño legible */
-            color: #546e7a;
-            cursor: pointer;
-            transition: background 0.1s;
-        }
-        @media (min-width: 400px) { .cell { font-size: 1.3rem; } } /* Más grande si la pantalla lo permite */
+        .btn-exit { background: rgba(255, 118, 117, 0.1); color: var(--accent); }
+        .btn-restart { background: rgba(0, 206, 201, 0.1); color: var(--secondary); }
+        .btn-back { background: rgba(128,128,128,0.1); color: var(--text); width: auto; padding: 0 15px; font-size: 0.9rem; }
 
-        .cell.highlight { background: var(--secondary); color: white; transform: scale(1.05); }
+        .nav { 
+            width: 100%; display: flex; justify-content: space-between; align-items: center; 
+            margin-bottom: 15px; padding-bottom: 10px; border-bottom: 2px solid rgba(128,128,128,0.1); 
+        }
+        .nav-controls { display: flex; }
+
+        .stat-box { font-family: monospace; font-size: 1.1rem; color: var(--primary); background: rgba(128,128,128,0.1); padding: 5px 10px; border-radius: 8px; margin-right: 10px; }
+
+        .theme-switch { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; cursor: pointer; z-index: 100; }
+
+        /* --- SOPA DE LETRAS --- */
+        #sopa-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; width: 100%; aspect-ratio: 1; touch-action: none; margin-bottom: 15px; }
+        .cell { background: rgba(128,128,128,0.1); border-radius: 4px; display: flex; justify-content: center; align-items: center; font-weight: 800; font-size: 1.1rem; color: var(--text-light); cursor: pointer; }
+        .cell.highlight { background: var(--secondary); color: white; transform: scale(1.1); z-index: 2; box-shadow: 0 0 10px rgba(0,0,0,0.2); }
         .cell.found { background: var(--primary); color: white; }
 
         /* --- SUDOKU --- */
-        #sudoku-board {
-            display: grid;
-            grid-template-columns: repeat(9, 1fr);
-            gap: 1px;
-            background: #333;
-            border: 2px solid #333;
-            margin-bottom: 15px;
-            border-radius: 4px;
-            overflow: hidden;
-            width: 100%;
-            max-width: 400px;
-        }
-        .sudo-cell {
-            background: white;
-            aspect-ratio: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.2rem;
-            color: #333;
-        }
-        .sudo-cell:nth-child(3n) { border-right: 2px solid #333; }
-        .sudo-cell:nth-child(9n) { border-right: none; }
-        .sudo-cell:nth-child(n+19):nth-child(-n+27),
-        .sudo-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #333; }
-        .sudo-cell.fixed { background: #e0e0e0; font-weight: bold; }
-        .sudo-cell.selected { background: #bbdefb; }
-        .sudo-cell.error { color: #d32f2f; background: #ffcdd2; }
-
+        #sudoku-board { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; background: var(--text); border: 2px solid var(--text); margin-bottom: 15px; border-radius: 4px; overflow: hidden; width: 100%; max-width: 400px; }
+        .sudo-cell { background: var(--card-bg); aspect-ratio: 1; display: flex; justify-content: center; align-items: center; font-size: 1.2rem; color: var(--text); cursor: pointer; }
+        .sudo-cell:nth-child(3n) { border-right: 2px solid var(--text); } .sudo-cell:nth-child(9n) { border-right: none; }
+        .sudo-cell:nth-child(n+19):nth-child(-n+27), .sudo-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid var(--text); }
+        .sudo-cell.fixed { background: rgba(128,128,128,0.2); font-weight: bold; }
+        .sudo-cell.selected { background: var(--secondary); color: white; }
+        .sudo-cell.error { color: var(--accent); background: rgba(255, 118, 117, 0.2); }
         .numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; width: 100%; max-width: 400px; }
-        .num-btn { padding: 10px; font-size: 1.2rem; border: 1px solid #cfd8dc; background: white; border-radius: 8px; color: var(--text); }
-        
+        .num-btn { padding: 12px; font-size: 1.2rem; background: var(--card-bg); border: 1px solid rgba(128,128,128,0.3); border-radius: 8px; color: var(--text); }
+
         /* --- MEMORIA --- */
-        #memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; padding: 10px 0; }
-        .card {
-            aspect-ratio: 1; background: var(--primary); border-radius: 10px; cursor: pointer;
-            display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: white;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s;
-        }
-        .card.flipped { background: white; border: 2px solid var(--primary); transform: rotateY(180deg); }
+        #memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; padding: 10px 0; }
+        .card { aspect-ratio: 1; background: var(--primary); border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: white; transition: transform 0.4s; transform-style: preserve-3d; }
+        .card.flipped { background: white; transform: rotateY(180deg); }
         .card-content { display: none; }
         .card.flipped .card-content { display: block; transform: rotateY(180deg); }
 
-        /* --- RETO MATEMÁTICO --- */
-        .math-box { background: #fff; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; }
-        .equation { font-size: 2.5rem; font-weight: bold; color: var(--text); margin-bottom: 5px; }
-        .math-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
-        .math-btn { font-size: 1.3rem; padding: 15px; }
+        /* --- SIMON --- */
+        .simon-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; width: 300px; height: 300px; margin: 20px auto; }
+        .simon-btn { border-radius: 20px; cursor: pointer; opacity: 0.6; transition: 0.1s; border: none; box-shadow: 0 5px 0 rgba(0,0,0,0.1); }
+        .simon-btn:active, .simon-btn.active { opacity: 1; transform: scale(0.95); box-shadow: 0 0 20px currentColor; }
+        .s-green { background: #00b894; color: #00b894; } .s-red { background: #ff7675; color: #ff7675; }
+        .s-yellow { background: #fdcb6e; color: #fdcb6e; } .s-blue { background: #0984e3; color: #0984e3; }
 
+        /* --- MATH --- */
+        .math-box { background: rgba(128,128,128,0.05); padding: 30px; border-radius: 20px; text-align: center; margin-bottom: 20px; width: 100%; }
+        .math-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+
+        .confetti { position: absolute; width: 10px; height: 10px; animation: fall linear forwards; }
+        @keyframes fall { to { transform: translateY(100vh) rotate(720deg); } }
     </style>
 </head>
 <body>
 
 <div class="app">
+    <div class="theme-switch" onclick="toggleTheme()">🌓</div>
 
     <div id="screen-home" class="screen active">
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; width:100%">
             <h1>🧠 Brain Gym</h1>
-            <p style="text-align:center; color:#78909c; margin-bottom:30px;">Gimnasio Mental 5.0</p>
-            
-            <button class="btn" onclick="showSopaMenu()">
-                <span style="font-size:1.5rem">🔤</span> Sopa de Letras
-            </button>
-            <button class="btn" onclick="initSudoku()">
-                <span style="font-size:1.5rem">🔢</span> Sudoku
-            </button>
-            <button class="btn" onclick="initMemory()">
-                <span style="font-size:1.5rem">🃏</span> Memoria
-            </button>
-            <button class="btn" onclick="initMath()">
-                <span style="font-size:1.5rem">🧮</span> Cálculo
-            </button>
+            <p style="text-align:center; color:var(--text-light); margin-bottom:30px;">Versión 7.0</p>
+            <button class="btn" onclick="showSopaMenu()"><span>🔤</span> Sopa de Letras</button>
+            <button class="btn" onclick="initSudoku()"><span>🔢</span> Sudoku</button>
+            <button class="btn" onclick="initMemory()"><span>🃏</span> Memoria</button>
+            <button class="btn" onclick="initSimon()"><span>🔴</span> Simon Dice</button>
+            <button class="btn" onclick="initMath()"><span>🧮</span> Cálculo</button>
+            <div style="margin-top:20px; text-align:center; font-size:0.8rem; color:var(--text-light)">
+                Récords: Math <span id="rec-math">0</span> | Simon <span id="rec-simon">0</span>
+            </div>
         </div>
     </div>
 
     <div id="screen-sopa-menu" class="screen">
-        <div class="nav">
-            <h2>Elige Tema</h2>
-            <button class="btn-sm btn" onclick="goHome()">Volver</button>
-        </div>
-        <div style="width:100%; display:grid; gap:8px;">
-            <button class="btn" onclick="initSopa('paises')">🌍 Países</button>
-            <button class="btn" onclick="initSopa('comidas')">🍕 Comidas</button>
-            <button class="btn" onclick="initSopa('animales')">🐶 Animales</button>
-            <button class="btn" onclick="initSopa('profesiones')">👨‍⚕️ Profesiones</button>
-            <button class="btn" onclick="initSopa('cuerpo')">👃 Cuerpo Humano</button>
-            <button class="btn btn-primary" onclick="initSopa('todo')">🚀 Mix (8 a 20 palabras)</button>
-        </div>
+        <div class="nav"><h2>Sopa de Letras</h2><button class="btn-icon btn-back" onclick="goHome()">Volver</button></div>
+        <button class="btn" onclick="initSopa('paises')">🌍 Países</button>
+        <button class="btn" onclick="initSopa('comidas')">🍕 Comidas</button>
+        <button class="btn" onclick="initSopa('tecnologia')">💻 Tecnología</button>
+        <button class="btn" onclick="initSopa('animales')">🐶 Animales</button>
+        <button class="btn btn-primary" onclick="initSopa('todo')">🚀 Modo Mix</button>
     </div>
 
     <div id="screen-sopa-game" class="screen">
         <div class="nav">
-            <span id="sopa-cat-title" style="font-weight:bold; color:var(--primary); font-size: 0.9rem;"></span>
-            <div id="sopa-timer" class="timer">00:00</div>
-            <button class="btn-sm btn" onclick="stopSopa(); showSopaMenu()">✖</button>
+            <h2 id="sopa-cat-title" style="font-size:1rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;"></h2>
+            <div class="nav-controls">
+                <div id="sopa-timer" class="stat-box">00:00</div>
+                <button class="btn-icon btn-restart" onclick="restartSopa()">↺</button>
+                <button class="btn-icon btn-exit" onclick="stopSopa(); showSopaMenu()">✖</button>
+            </div>
         </div>
-        
         <div id="sopa-grid"></div>
-        
-        <div id="sopa-words" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
+        <div id="sopa-words" style="display:flex; flex-wrap:wrap; gap:5px; justify-content:center;"></div>
     </div>
 
     <div id="screen-sudoku" class="screen">
         <div class="nav">
             <h2>Sudoku</h2>
-            <button class="btn-sm btn" onclick="goHome()">Salir</button>
+            <div class="nav-controls">
+                <button class="btn-icon btn-restart" onclick="initSudoku()">↺</button>
+                <button class="btn-icon btn-exit" onclick="goHome()">✖</button>
+            </div>
         </div>
         <div id="sudoku-board"></div>
         <div class="numpad">
-            <button class="num-btn" onclick="fillSudoku(1)">1</button>
-            <button class="num-btn" onclick="fillSudoku(2)">2</button>
-            <button class="num-btn" onclick="fillSudoku(3)">3</button>
-            <button class="num-btn" onclick="fillSudoku(4)">4</button>
-            <button class="num-btn" onclick="fillSudoku(5)">5</button>
-            <button class="num-btn" onclick="fillSudoku(6)">6</button>
-            <button class="num-btn" onclick="fillSudoku(7)">7</button>
-            <button class="num-btn" onclick="fillSudoku(8)">8</button>
-            <button class="num-btn" onclick="fillSudoku(9)">9</button>
-            <button class="num-btn" style="color:var(--accent)" onclick="fillSudoku(null)">⌫</button>
+            <button class="num-btn" onclick="fillSudoku(1)">1</button><button class="num-btn" onclick="fillSudoku(2)">2</button>
+            <button class="num-btn" onclick="fillSudoku(3)">3</button><button class="num-btn" onclick="fillSudoku(4)">4</button>
+            <button class="num-btn" onclick="fillSudoku(5)">5</button><button class="num-btn" onclick="fillSudoku(6)">6</button>
+            <button class="num-btn" onclick="fillSudoku(7)">7</button><button class="num-btn" onclick="fillSudoku(8)">8</button>
+            <button class="num-btn" onclick="fillSudoku(9)">9</button><button class="num-btn" style="color:var(--accent)" onclick="fillSudoku(null)">⌫</button>
         </div>
         <div style="margin-top:20px; display:flex; gap:10px; width:100%">
             <button class="btn btn-primary" onclick="checkSudoku()">Verificar</button>
-            <button class="btn" onclick="initSudoku()">Nuevo</button>
         </div>
     </div>
 
     <div id="screen-memory" class="screen">
         <div class="nav">
             <h2>Memoria</h2>
-            <button class="btn-sm btn" onclick="goHome()">Salir</button>
+            <div class="nav-controls">
+                <button class="btn-icon btn-restart" onclick="initMemory()">↺</button>
+                <button class="btn-icon btn-exit" onclick="goHome()">✖</button>
+            </div>
         </div>
         <div id="memory-grid"></div>
+    </div>
+
+    <div id="screen-simon" class="screen">
+        <div class="nav">
+            <h2>Simon</h2>
+            <div class="nav-controls">
+                <button class="btn-icon btn-restart" onclick="initSimon()">↺</button>
+                <button class="btn-icon btn-exit" onclick="goHome()">✖</button>
+            </div>
+        </div>
+        <div style="text-align:center; font-size:1.5rem; margin-bottom:10px">Nivel: <span id="simon-level" style="color:var(--primary); font-weight:bold">1</span></div>
+        <div class="simon-grid">
+            <button id="s-0" class="simon-btn s-green" onclick="handleSimonInput(0)"></button>
+            <button id="s-1" class="simon-btn s-red" onclick="handleSimonInput(1)"></button>
+            <button id="s-2" class="simon-btn s-yellow" onclick="handleSimonInput(2)"></button>
+            <button id="s-3" class="simon-btn s-blue" onclick="handleSimonInput(3)"></button>
+        </div>
+        <button id="start-simon" class="btn btn-primary" onclick="startSimonRound()">Comenzar</button>
     </div>
 
     <div id="screen-math" class="screen">
         <div class="nav">
             <h2>Cálculo</h2>
-            <button class="btn-sm btn" onclick="stopMath(); goHome()">Salir</button>
+            <div class="nav-controls">
+                <button class="btn-icon btn-restart" onclick="initMath()">↺</button>
+                <button class="btn-icon btn-exit" onclick="stopMath(); goHome()">✖</button>
+            </div>
         </div>
         <div class="math-box">
-            <div class="equation" id="math-eq"></div>
-            <div style="font-size:1.2rem; color:var(--primary)">Puntos: <span id="math-score">0</span> | Tiempo: <span id="math-time">30</span></div>
+            <div style="font-size:3rem; font-weight:bold; margin-bottom:10px" id="math-eq"></div>
+            <div style="color:var(--text-light)">Puntos: <span id="math-score">0</span> | Tiempo: <span id="math-time">30</span></div>
         </div>
         <div class="math-options" id="math-opts"></div>
     </div>
@@ -265,308 +261,230 @@
 </div>
 
 <script>
-    /* ================= NAVEGACIÓN ================= */
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        document.getElementById(id).classList.add('active');
-    }
+    // --- SYSTEM ---
+    function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); loadRecords(); }
     function goHome() { showScreen('screen-home'); }
     function showSopaMenu() { showScreen('screen-sopa-menu'); }
-
-    /* ================= 1. SOPA DE LETRAS PRO (DYNAMIC) ================= */
-    // BASE DE DATOS EXTENDIDA (40+ Palabras por categoría)
-    const sopaDB = {
-        paises: [
-            "ARGENTINA","BOLIVIA","BRASIL","CHILE","COLOMBIA","ECUADOR","PARAGUAY","PERU","URUGUAY","VENEZUELA",
-            "MEXICO","USA","CANADA","PANAMA","CUBA","ESPAÑA","FRANCIA","ITALIA","ALEMANIA","PORTUGAL",
-            "RUSIA","CHINA","JAPON","INDIA","COREA","EGIPTO","MARRUECOS","SUDAFRICA","AUSTRALIA","UEVAZELANDA",
-            "SUECIA","NORUEGA","FINLANDIA","DINAMARCA","POLONIA","GRECIA","TURQUIA","ISRAEL","IRAN","IRAK",
-            "VIETNAM","THAILANDIA"
-        ],
-        comidas: [
-            "PIZZA","HAMBURGUESA","PERRITO","SANDWICH","TACOS","BURRITO","NACHOS","QUESADILLA",
-            "SUSHI","SASHIMI","RAMEN","GYOZAS","ARROZ","PASTA","LASAÑA","RAVIOLIS","MACARRONES",
-            "POLLO","TERNERA","CERDO","CORDERO","PESCADO","SALMON","ATUN","GAMBAS","CALAMARES",
-            "ENSALADA","SOPA","CREMA","PURE","PATATAS","HUEVOS","TORTILLA","PAN","QUESO","JAMON",
-            "CHOCOLATE","HELADO","TARTA","FRUTA","MANZANA","PLATANO"
-        ],
-        animales: [
-            "PERRO","GATO","HAMSTER","CONEJO","PAJARO","PEZ","TORTUGA","LORO","CANARIO",
-            "LEON","TIGRE","ELEFANTE","JIRAFA","ZEBRA","HIPOPOTAMO","RINOCERONTE","MONO","GORILA",
-            "OSO","PANDA","POLAR","LOBO","ZORRO","CIERVO","JABALI","CABALLO","VACA","OVEJA",
-            "CERDO","GALLINA","PATO","AGUILA","BUHO","HALCON","DELFIN","BALLENA","TIBURON",
-            "PULPO","CANGREJO","SERPIENTE","COCODRILO","RANA"
-        ],
-        profesiones: [
-            "MEDICO","ENFERMERO","CIRUJANO","DENTISTA","VETERINARIO","PSICOLOGO",
-            "PROFESOR","MAESTRO","DIRECTOR","ESTUDIANTE","CIENTIFICO","INVESTIGADOR",
-            "INGENIERO","ARQUITECTO","ALBAÑIL","FONTANERO","ELECTRICISTA","CARPINTERO","PINTOR",
-            "POLICIA","BOMBERO","MILITAR","PILOTO","AZAFATA","CONDUCTOR","TAXISTA","CAMIONERO",
-            "ABOGADO","JUEZ","POLITICO","PERIODISTA","ESCRITOR","MUSICO","ACTOR","CANTANTE",
-            "PINTOR","ARTISTA","COCINERO","CAMARERO","PANADERO"
-        ],
-        cuerpo: [
-            "CABEZA","CARA","PELO","OJOS","NARIZ","BOCA","DIENTES","LENGUA","OREJAS",
-            "CUELLO","HOMBRO","BRAZO","CODO","MANO","DEDOS","UÑAS","PECHO","ESPALDA",
-            "BARRIGA","CINTURA","CADERA","PIERNA","RODILLA","TOBILLO","PIE","TALON",
-            "CORAZON","PULMON","ESTOMAGO","HIGADO","RIÑON","INTESTINO","HUESO","MUSCULO",
-            "SANGRE","PIEL","CEREBRO","NERVIO","VENA","ARTERIA"
-        ],
-        todo: []
-    };
-    // Generar 'todo' dinámicamente
-    sopaDB.todo = [].concat(...Object.values(sopaDB));
-
-    let sGridSize = 12; // Grid 12x12
-    let sMatrix = [], sWords = [], sFound = [];
-    let sTimerInterval, sSeconds = 0, sTimerStarted = false;
-    let isSwiping = false, swipeStart = null, currentHighlight = [];
-
-    function initSopa(cat) {
-        showScreen('screen-sopa-game');
-        document.getElementById('sopa-cat-title').textContent = cat.toUpperCase();
-        
-        clearInterval(sTimerInterval);
-        sSeconds = 0; sTimerStarted = false;
-        document.getElementById('sopa-timer').textContent = "00:00";
-
-        // --- LÓGICA DE DENSIDAD DINÁMICA ---
-        // 1. Obtener lista completa y barajar
-        let fullList = sopaDB[cat].sort(() => Math.random() - 0.5);
-        
-        // 2. Elegir cantidad aleatoria entre 8 y 20
-        let minWords = 8;
-        let maxWords = 20;
-        let count = Math.floor(Math.random() * (maxWords - minWords + 1)) + minWords;
-        
-        // 3. Seleccionar palabras (cortar array)
-        sWords = fullList.slice(0, count);
-        sFound = [];
-
-        generateSopaGrid();
-        renderSopa();
+    function toggleTheme() { document.body.classList.toggle('dark-mode'); }
+    function loadRecords() { document.getElementById('rec-math').textContent = localStorage.getItem('bg_math') || 0; document.getElementById('rec-simon').textContent = localStorage.getItem('bg_simon') || 0; }
+    loadRecords();
+    function fireConfetti() {
+        for(let i=0; i<50; i++) {
+            let c=document.createElement('div'); c.className='confetti'; c.style.left=Math.random()*100+'%'; c.style.top='-10px';
+            c.style.backgroundColor=`hsl(${Math.random()*360},100%,50%)`; c.style.animationDuration=(Math.random()*2+1)+'s';
+            document.body.appendChild(c); setTimeout(()=>c.remove(),3000);
+        }
     }
 
-    function startSopaTimer() {
-        if(sTimerStarted) return;
-        sTimerStarted = true;
-        sTimerInterval = setInterval(() => {
-            sSeconds++;
-            let m = Math.floor(sSeconds/60).toString().padStart(2,'0');
-            let s = (sSeconds%60).toString().padStart(2,'0');
+    // --- 1. SOPA ---
+    const sopaDB = {
+        paises: ["ARGENTINA","BOLIVIA","BRASIL","CHILE","COLOMBIA","ECUADOR","ESPAÑA","FRANCIA","ITALIA","JAPON","CHINA","ALEMANIA","MEXICO","CANADA","URUGUAY","PERU"],
+        comidas: ["PIZZA","HAMBURGUESA","SUSHI","TACOS","PASTA","ARROZ","POLLO","ENSALADA","HELADO","FRUTA","CHOCOLATE","QUESO","PAN","SOPA","TORTILLA"],
+        tecnologia: ["INTERNET","WIFI","MOUSE","TECLADO","MONITOR","LAPTOP","IPHONE","ANDROID","GOOGLE","CODIGO","ROBOT","DATOS","NUBE","PANTALLA","APP"],
+        animales: ["PERRO","GATO","LEON","TIGRE","ELEFANTE","JIRAFA","OSO","LOBO","AGUILA","DELFIN","TIBURON","PANDA","MONO","CABALLO"],
+        todo: []
+    };
+    sopaDB.todo = [].concat(...Object.values(sopaDB));
+    let sGrid=12, sMatrix=[], sWords=[], sFound=[], sTimer, sTime=0, sActive=false, sCurrentCat='todo';
+    let swipe=false, sStart=null, sHigh=[];
+
+    function initSopa(cat) {
+        sCurrentCat = cat; // Recordar categoría para reiniciar
+        showScreen('screen-sopa-game');
+        document.getElementById('sopa-cat-title').textContent = cat.toUpperCase();
+        stopSopa(); sTime=0; sActive=false;
+        document.getElementById('sopa-timer').textContent = "00:00";
+        
+        let pool = sopaDB[cat].sort(()=>Math.random()-0.5);
+        let count = Math.floor(Math.random()*13) + 8;
+        sWords = pool.slice(0, count); sFound=[];
+        genSopa(); renderSopa();
+    }
+    function restartSopa() { initSopa(sCurrentCat); }
+
+    function startTimer() {
+        if(sActive) return; sActive=true;
+        sTimer = setInterval(() => { sTime++;
+            let m=Math.floor(sTime/60).toString().padStart(2,'0'), s=(sTime%60).toString().padStart(2,'0');
             document.getElementById('sopa-timer').textContent = `${m}:${s}`;
         }, 1000);
     }
-    function stopSopa() { clearInterval(sTimerInterval); }
-
-    function generateSopaGrid() {
-        sMatrix = Array(sGridSize).fill().map(() => Array(sGridSize).fill(''));
-        let wordsPlaced = [];
-
-        // Intentar colocar las palabras seleccionadas
-        for(let word of sWords) {
-            // Filtrar palabras muy largas si la grilla es pequeña (opcional, pero seguro)
-            if(word.length > sGridSize) continue;
-
-            let placed = false, attempts = 0;
-            while(!placed && attempts++ < 150) {
-                let dir = Math.floor(Math.random()*3); // 0:H, 1:V, 2:D
-                let r = Math.floor(Math.random()*sGridSize);
-                let c = Math.floor(Math.random()*sGridSize);
-                if(checkFit(word, r, c, dir)) {
-                    for(let i=0; i<word.length; i++) {
-                        let nr = r + (dir===1||dir===2 ? i : 0);
-                        let nc = c + (dir===0||dir===2 ? i : 0);
-                        sMatrix[nr][nc] = word[i];
-                    }
-                    placed = true;
-                    wordsPlaced.push(word);
+    function stopSopa() { clearInterval(sTimer); sActive=false; }
+    function genSopa() {
+        sMatrix = Array(sGrid).fill().map(()=>Array(sGrid).fill(''));
+        let placedWords = [];
+        for(let w of sWords) {
+            if(w.length>sGrid) continue;
+            let placed=false, tries=0;
+            while(!placed && tries++<100) {
+                let dir=Math.floor(Math.random()*3), r=Math.floor(Math.random()*sGrid), c=Math.floor(Math.random()*sGrid);
+                if(checkFit(w,r,c,dir)) {
+                    for(let i=0; i<w.length; i++) sMatrix[r+(dir===1||dir===2?i:0)][c+(dir===0||dir===2?i:0)] = w[i];
+                    placed=true; placedWords.push(w);
                 }
             }
         }
-        // Actualizar lista de palabras a las que REALMENTE cupieron (por si alguna falla)
-        sWords = wordsPlaced;
-
-        // Rellenar huecos
+        sWords = placedWords;
         const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
-        for(let r=0; r<sGridSize; r++) for(let c=0; c<sGridSize; c++)
-            if(!sMatrix[r][c]) sMatrix[r][c] = abc[Math.floor(Math.random()*abc.length)];
+        for(let r=0; r<sGrid; r++) for(let c=0; c<sGrid; c++) if(!sMatrix[r][c]) sMatrix[r][c] = abc[Math.floor(Math.random()*abc.length)];
     }
-
-    function checkFit(w, r, c, dir) {
-        let len = w.length;
-        let er = r + (dir===1||dir===2 ? len-1 : 0);
-        let ec = c + (dir===0||dir===2 ? len-1 : 0);
-        if(er >= sGridSize || ec >= sGridSize) return false;
+    function checkFit(w,r,c,d) {
+        let len=w.length, er=r+(d!==0?len-1:0), ec=c+(d!==1?len-1:0);
+        if(er>=sGrid || ec>=sGrid) return false;
         for(let i=0; i<len; i++) {
-            let nr = r + (dir===1||dir===2 ? i : 0);
-            let nc = c + (dir===0||dir===2 ? i : 0);
-            if(sMatrix[nr][nc] !== '' && sMatrix[nr][nc] !== w[i]) return false;
+            let nr=r+(d!==0?i:0), nc=c+(d!==1?i:0);
+            if(sMatrix[nr][nc]!=='' && sMatrix[nr][nc]!==w[i]) return false;
         }
         return true;
     }
-
     function renderSopa() {
-        const grid = document.getElementById('sopa-grid');
-        grid.innerHTML = '';
-        for(let r=0; r<sGridSize; r++) {
-            for(let c=0; c<sGridSize; c++) {
-                let d = document.createElement('div');
-                d.className = 'cell';
-                d.textContent = sMatrix[r][c];
-                d.dataset.r = r; d.dataset.c = c;
-                d.onmousedown = handleStart; d.onmouseenter = handleMove; d.onmouseup = handleEnd;
-                d.ontouchstart = (e) => { e.preventDefault(); handleStart.call(d); };
-                grid.appendChild(d);
-            }
+        const g = document.getElementById('sopa-grid'); g.innerHTML='';
+        for(let r=0; r<sGrid; r++) for(let c=0; c<sGrid; c++) {
+            let d=document.createElement('div'); d.className='cell'; d.textContent=sMatrix[r][c];
+            d.dataset.r=r; d.dataset.c=c;
+            d.onmousedown=hStart; d.onmouseenter=hMove; d.onmouseup=hEnd;
+            d.ontouchstart=(e)=>{e.preventDefault(); hStart.call(d)};
+            g.appendChild(d);
         }
-        grid.ontouchmove = (e) => {
-            e.preventDefault();
-            let el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
-            if(el && el.classList.contains('cell')) handleMove.call(el);
-        };
-        grid.ontouchend = handleEnd;
-
-        const list = document.getElementById('sopa-words');
-        list.innerHTML = '';
-        sWords.forEach(w => {
-            let sp = document.createElement('span');
-            sp.id = 'w-'+w; sp.textContent = w;
-            sp.style.padding="3px 6px"; sp.style.background="#eceff1"; sp.style.borderRadius="4px"; sp.style.fontSize="0.75rem";
-            list.appendChild(sp);
-        });
+        g.ontouchmove=(e)=>{e.preventDefault(); let el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY); if(el?.classList.contains('cell')) hMove.call(el)};
+        g.ontouchend=hEnd;
+        const l=document.getElementById('sopa-words'); l.innerHTML='';
+        sWords.forEach(w => { let s=document.createElement('span'); s.id='w-'+w; s.textContent=w; s.style.padding="4px 8px"; s.style.background="rgba(128,128,128,0.1)"; s.style.borderRadius="4px"; s.style.fontSize="0.8rem"; l.appendChild(s); });
     }
-
-    function handleStart() { startSopaTimer(); isSwiping=true; swipeStart=this; highlightCells(this); }
-    function handleMove() { if(isSwiping && swipeStart) highlightCells(this); }
-    function highlightCells(end) {
-        currentHighlight.forEach(c => c.classList.remove('highlight'));
-        currentHighlight = [];
-        let r1 = +swipeStart.dataset.r, c1 = +swipeStart.dataset.c;
-        let r2 = +end.dataset.r, c2 = +end.dataset.c;
-        let dr = r2-r1, dc = c2-c1;
-        let steps = Math.max(Math.abs(dr), Math.abs(dc));
+    function hStart() { startTimer(); swipe=true; sStart=this; hl(this); }
+    function hMove() { if(swipe && sStart) hl(this); }
+    function hl(end) {
+        sHigh.forEach(c=>c.classList.remove('highlight')); sHigh=[];
+        let r1=+sStart.dataset.r, c1=+sStart.dataset.c, r2=+end.dataset.r, c2=+end.dataset.c;
+        let dr=r2-r1, dc=c2-c1, st=Math.max(Math.abs(dr),Math.abs(dc));
         if(dr!==0 && dc!==0 && Math.abs(dr)!==Math.abs(dc)) return;
-        
-        for(let i=0; i<=steps; i++) {
-            let nr = r1 + (dr===0?0:dr/steps)*i, nc = c1 + (dc===0?0:dc/steps)*i;
-            let cell = document.querySelector(`.cell[data-r="${nr}"][data-c="${nc}"]`);
-            if(cell) { cell.classList.add('highlight'); currentHighlight.push(cell); }
+        for(let i=0; i<=st; i++) {
+            let nr=r1+(dr===0?0:dr/st)*i, nc=c1+(dc===0?0:dc/st)*i;
+            let c=document.querySelector(`.cell[data-r="${nr}"][data-c="${nc}"]`);
+            if(c) { c.classList.add('highlight'); sHigh.push(c); }
         }
     }
-    function handleEnd() {
-        if(!isSwiping) return;
-        isSwiping = false;
-        let word = currentHighlight.map(c => c.textContent).join('');
-        let rev = word.split('').reverse().join('');
-        let match = null;
-        if(sWords.includes(word) && !sFound.includes(word)) match = word;
-        else if(sWords.includes(rev) && !sFound.includes(rev)) match = rev;
-
-        if(match) {
-            sFound.push(match);
-            currentHighlight.forEach(c => { c.classList.remove('highlight'); c.classList.add('found'); });
-            let wEl = document.getElementById('w-'+match);
-            if(wEl) {
-                wEl.style.background = "var(--primary)"; wEl.style.color = "white"; wEl.style.textDecoration = "line-through";
-            }
-            if(sFound.length === sWords.length) { setTimeout(() => alert("¡Ganaste!"), 100); stopSopa(); }
-        } else {
-            currentHighlight.forEach(c => c.classList.remove('highlight'));
-        }
-        currentHighlight = []; swipeStart = null;
+    function hEnd() {
+        if(!swipe) return; swipe=false;
+        let w=sHigh.map(c=>c.textContent).join(''), rev=w.split('').reverse().join('');
+        let m=(sWords.includes(w)&&!sFound.includes(w))?w:(sWords.includes(rev)&&!sFound.includes(rev)?rev:null);
+        if(m) {
+            sFound.push(m); sHigh.forEach(c=>{c.classList.remove('highlight'); c.classList.add('found')});
+            let el=document.getElementById('w-'+m); el.style.background="var(--primary)"; el.style.color="white"; el.style.textDecoration="line-through";
+            if(sFound.length===sWords.length) { stopSopa(); fireConfetti(); alert(`¡Completado en ${document.getElementById('sopa-timer').textContent}!`); }
+        } else sHigh.forEach(c=>c.classList.remove('highlight'));
+        sHigh=[]; sStart=null;
     }
 
-    /* ================= 2. SUDOKU ================= */
-    let sudoSol = [], sudoPuz = [], selSudo = null;
+    // --- 2. SUDOKU ---
+    let suSol=[], suPuz=[], suSel=null;
     function initSudoku() {
         showScreen('screen-sudoku');
-        let base = [[1,2,3,4,5,6,7,8,9],[4,5,6,7,8,9,1,2,3],[7,8,9,1,2,3,4,5,6],[2,3,4,5,6,7,8,9,1],[5,6,7,8,9,1,2,3,4],[8,9,1,2,3,4,5,6,7],[3,4,5,6,7,8,9,1,2],[6,7,8,9,1,2,3,4,5],[9,1,2,3,4,5,6,7,8]];
-        let map = [1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-0.5);
-        sudoSol = base.map(row => row.map(n => map[n-1]));
-        sudoPuz = sudoSol.map(r => [...r]);
-        let holes = 40;
-        while(holes>0) { let r=Math.floor(Math.random()*9), c=Math.floor(Math.random()*9); if(sudoPuz[r][c]!==0){ sudoPuz[r][c]=0; holes--; } }
-        
-        const b = document.getElementById('sudoku-board'); b.innerHTML = ''; selSudo = null;
+        let b=[[1,2,3,4,5,6,7,8,9],[4,5,6,7,8,9,1,2,3],[7,8,9,1,2,3,4,5,6],[2,3,4,5,6,7,8,9,1],[5,6,7,8,9,1,2,3,4],[8,9,1,2,3,4,5,6,7],[3,4,5,6,7,8,9,1,2],[6,7,8,9,1,2,3,4,5],[9,1,2,3,4,5,6,7,8]];
+        let m=[1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-0.5);
+        suSol=b.map(r=>r.map(n=>m[n-1])); suPuz=suSol.map(r=>[...r]);
+        let h=45; while(h>0){ let r=Math.floor(Math.random()*9),c=Math.floor(Math.random()*9); if(suPuz[r][c]!==0){suPuz[r][c]=0;h--}}
+        const bd=document.getElementById('sudoku-board'); bd.innerHTML=''; suSel=null;
         for(let i=0; i<81; i++) {
-            let d = document.createElement('div'); d.className = 'sudo-cell';
-            let r=Math.floor(i/9), c=i%9;
-            if(sudoPuz[r][c]!==0) { d.textContent=sudoPuz[r][c]; d.classList.add('fixed'); }
-            else d.onclick = () => { if(selSudo) selSudo.classList.remove('selected'); selSudo=d; d.classList.add('selected'); };
-            b.appendChild(d);
+            let d=document.createElement('div'); d.className='sudo-cell';
+            let r=Math.floor(i/9), c=i%9, v=suPuz[r][c];
+            if(v!==0) { d.textContent=v; d.classList.add('fixed'); }
+            else d.onclick=()=>{ if(suSel) suSel.classList.remove('selected'); suSel=d; d.classList.add('selected'); };
+            bd.appendChild(d);
         }
     }
-    function fillSudoku(n) { if(selSudo) { selSudo.textContent = n?n:''; selSudo.classList.remove('error'); } }
+    function fillSudoku(n) { if(suSel) { suSel.textContent=n?n:''; suSel.classList.remove('error'); } }
     function checkSudoku() {
-        let err=0, mt=0, cells=document.querySelectorAll('.sudo-cell');
-        cells.forEach((d,i) => {
-            let val = parseInt(d.textContent)||0;
-            if(val===0) mt++;
-            else if(val !== sudoSol[Math.floor(i/9)][i%9] && !d.classList.contains('fixed')) { d.classList.add('error'); err++; }
+        let err=0, mt=0, cs=document.querySelectorAll('.sudo-cell');
+        cs.forEach((c,i)=>{
+            let v=parseInt(c.textContent)||0;
+            if(v===0) mt++;
+            else if(v!==suSol[Math.floor(i/9)][i%9] && !c.classList.contains('fixed')) { c.classList.add('error'); err++; }
         });
-        alert(err===0 && mt===0 ? "¡Correcto!" : `Errores: ${err}, Vacíos: ${mt}`);
+        if(err===0 && mt===0) { fireConfetti(); alert("¡Sudoku Correcto!"); }
+        else alert(`Errores: ${err}, Vacíos: ${mt}`);
     }
 
-    /* ================= 3. MEMORIA ================= */
-    const memoThemes = [
-        ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼"],
-        ["⚽","🏀","🏈","🎾","🎱","🎳","⛳","🥊"],
-        ["🍏","🍔","🍕","🍪","🌮","🍦","🍩","🍟"],
-        ["😀","😎","😍","🤔","😴","🤢","🤡","👻"]
-    ];
-    let flipCards = [], lock = false;
-
+    // --- 3. MEMORIA ---
+    const memIcons = ["🍎","🍌","🍒","🍇","🍉","🍓","🍑","🍍"];
+    let memFlips=[], memLock=false;
     function initMemory() {
         showScreen('screen-memory');
-        const grid = document.getElementById('memory-grid'); grid.innerHTML=''; flipCards=[]; lock=false;
-        let theme = memoThemes[Math.floor(Math.random()*memoThemes.length)];
-        let deck = [...theme, ...theme].sort(()=>Math.random()-0.5);
-        deck.forEach(icon => {
-            let c = document.createElement('div'); c.className = 'card';
-            c.innerHTML = `<div class="card-content">${icon}</div>`;
-            c.onclick = () => {
-                if(lock || c.classList.contains('flipped')) return;
-                c.classList.add('flipped'); flipCards.push({c, icon});
-                if(flipCards.length===2) {
-                    lock=true;
-                    if(flipCards[0].icon === flipCards[1].icon) { flipCards=[]; lock=false; if(!document.querySelectorAll('.card:not(.flipped)').length) setTimeout(()=>alert("¡Ganaste!"),500); }
-                    else setTimeout(() => { flipCards[0].c.classList.remove('flipped'); flipCards[1].c.classList.remove('flipped'); flipCards=[]; lock=false; }, 1000);
+        const g=document.getElementById('memory-grid'); g.innerHTML=''; memFlips=[]; memLock=false;
+        let deck=[...memIcons, ...memIcons].sort(()=>Math.random()-0.5);
+        deck.forEach(i => {
+            let c=document.createElement('div'); c.className='card'; c.innerHTML=`<div class="card-content">${i}</div>`;
+            c.onclick=()=>{
+                if(memLock || c.classList.contains('flipped')) return;
+                c.classList.add('flipped'); memFlips.push({c,i});
+                if(memFlips.length===2) {
+                    memLock=true;
+                    if(memFlips[0].i === memFlips[1].i) { memFlips=[]; memLock=false; if(!document.querySelectorAll('.card:not(.flipped)').length) { fireConfetti(); setTimeout(()=>alert("¡Ganaste!"),500); } }
+                    else setTimeout(()=>{memFlips[0].c.classList.remove('flipped'); memFlips[1].c.classList.remove('flipped'); memFlips=[]; memLock=false;},1000);
                 }
             };
-            grid.appendChild(c);
+            g.appendChild(c);
         });
     }
 
-    /* ================= 4. MATEMÁTICAS ================= */
-    let mathScore = 0, mathTime = 30, mathInterval, currentAns = 0;
-    function initMath() {
-        showScreen('screen-math'); mathScore = 0; mathTime = 30;
-        document.getElementById('math-score').textContent = "0"; document.getElementById('math-time').textContent = "30";
-        newMathQ();
-        mathInterval = setInterval(() => {
-            mathTime--; document.getElementById('math-time').textContent = mathTime;
-            if(mathTime <= 0) { clearInterval(mathInterval); alert(`¡Tiempo! Puntos: ${mathScore}`); goHome(); }
-        }, 1000);
+    // --- 4. SIMON ---
+    let simonSeq=[], simonInput=[], simonLevel=1, simonActive=false, simonInterval;
+    function initSimon() {
+        clearInterval(simonInterval); // Limpiar previo
+        showScreen('screen-simon'); simonSeq=[]; simonLevel=1; 
+        document.getElementById('simon-level').textContent=simonLevel; 
+        document.getElementById('start-simon').style.display='block'; 
     }
-    function stopMath() { clearInterval(mathInterval); }
-    function newMathQ() {
-        let op = Math.random() < 0.5 ? '+' : (Math.random()<0.5 ? '-' : '*');
-        let a = Math.floor(Math.random()*12)+1, b = Math.floor(Math.random()*12)+1;
-        if(op === '*') { a = Math.floor(Math.random()*9)+1; b = Math.floor(Math.random()*9)+1; }
-        currentAns = eval(`${a} ${op} ${b}`);
-        document.getElementById('math-eq').textContent = `${a} ${op} ${b}`;
-        let opts = [currentAns];
-        while(opts.length < 4) { let fake = currentAns + Math.floor(Math.random()*10) - 5; if(fake !== currentAns && !opts.includes(fake) && fake > 0) opts.push(fake); }
-        opts.sort(() => Math.random() - 0.5);
-        let c = document.getElementById('math-opts'); c.innerHTML = '';
-        opts.forEach(o => {
-            let btn = document.createElement('button'); btn.className = 'btn btn-primary math-btn'; btn.textContent = o;
-            btn.onclick = () => {
-                if(o === currentAns) { mathScore += 10; document.getElementById('math-score').textContent = mathScore; btn.style.background = "#4caf50"; setTimeout(newMathQ, 200); }
-                else { mathScore = Math.max(0, mathScore - 5); document.getElementById('math-score').textContent = mathScore; btn.style.background = "#ef5350"; }
-            };
-            c.appendChild(btn);
+    function startSimonRound() {
+        document.getElementById('start-simon').style.display='none';
+        simonInput=[]; simonSeq.push(Math.floor(Math.random()*4)); playSimonSeq();
+    }
+    function playSimonSeq() {
+        simonActive=false; let i=0;
+        simonInterval = setInterval(()=>{
+            flashSimon(simonSeq[i]); i++;
+            if(i>=simonSeq.length) { clearInterval(simonInterval); simonActive=true; }
+        }, 800);
+    }
+    function flashSimon(idx) {
+        let btn = document.getElementById('s-'+idx);
+        btn.classList.add('active'); setTimeout(()=>btn.classList.remove('active'), 400);
+    }
+    function handleSimonInput(idx) {
+        if(!simonActive) return;
+        flashSimon(idx); simonInput.push(idx);
+        if(simonInput[simonInput.length-1] !== simonSeq[simonInput.length-1]) {
+            simonActive=false; alert(`¡Perdiste! Nivel: ${simonLevel}`);
+            let old=parseInt(localStorage.getItem('bg_simon'))||0; if(simonLevel>old) localStorage.setItem('bg_simon',simonLevel);
+            initSimon(); return;
+        }
+        if(simonInput.length === simonSeq.length) {
+            simonActive=false; simonLevel++; document.getElementById('simon-level').textContent=simonLevel;
+            setTimeout(startSimonRound, 1000);
+        }
+    }
+
+    // --- 5. MATH ---
+    let mScore=0, mTime=30, mInterval, mAns=0;
+    function initMath() {
+        stopMath(); // Limpiar previo
+        showScreen('screen-math'); mScore=0; mTime=30;
+        document.getElementById('math-score').textContent="0"; document.getElementById('math-time').textContent="30";
+        nextMath();
+        mInterval = setInterval(()=>{ mTime--; document.getElementById('math-time').textContent=mTime; if(mTime<=0){ stopMath(); alert(`Tiempo. Puntos: ${mScore}`); let old=parseInt(localStorage.getItem('bg_math'))||0; if(mScore>old) localStorage.setItem('bg_math',mScore); goHome(); } }, 1000);
+    }
+    function stopMath() { clearInterval(mInterval); }
+    function nextMath() {
+        let a=Math.floor(Math.random()*12)+1, b=Math.floor(Math.random()*12)+1, op=Math.random()<0.5?'+':(Math.random()<0.5?'-':'*');
+        if(op==='*'){a=Math.floor(Math.random()*9)+1; b=Math.floor(Math.random()*9)+1;}
+        mAns=eval(`${a}${op}${b}`); document.getElementById('math-eq').textContent=`${a} ${op} ${b}`;
+        let opts=[mAns]; while(opts.length<4){let f=mAns+Math.floor(Math.random()*10)-5; if(f!==mAns && !opts.includes(f)) opts.push(f);}
+        opts.sort(()=>Math.random()-0.5);
+        let c=document.getElementById('math-opts'); c.innerHTML='';
+        opts.forEach(o=>{
+            let b=document.createElement('button'); b.className='btn btn-primary'; b.textContent=o; b.style.fontSize="1.5rem";
+            b.onclick=()=>{ if(o===mAns){mScore+=10; document.getElementById('math-score').textContent=mScore; nextMath();} else {mScore=Math.max(0,mScore-5); document.getElementById('math-score').textContent=mScore;} };
+            c.appendChild(b);
         });
     }
 </script>
