@@ -1,424 +1,574 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Ruleta Gastronómica</title>
-  <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      margin: 0;
-      font-family: 'Lexend', sans-serif;
-      background: linear-gradient(135deg, #0d0d0d, #1a1a2e, #16213e, #0f3460);
-      background-size: 400% 400%;
-      animation: gradientBG 12s ease infinite;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      color: white;
-      padding: 15px;
-      box-sizing: border-box;
-      position: relative;
-    }
-    @keyframes gradientBG {
-      0% {background-position: 0% 50%;}
-      50% {background-position: 100% 50%;}
-      100% {background-position: 0% 50%;}
-    }
-    h1 {
-      font-size: 32px;
-      margin-bottom: 15px;
-      text-align: center;
-      animation: glow 2s ease-in-out infinite alternate;
-    }
-    @keyframes glow {
-      from { text-shadow: 0 0 10px #00aaff, 0 0 20px #00aaff; }
-      to   { text-shadow: 0 0 20px #00ddff, 0 0 40px #00ddff; }
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arcade Mental 5.0</title>
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --primary: #5c6bc0;
+            --secondary: #26a69a;
+            --accent: #ef5350;
+            --text: #37474f;
+            --radius: 24px;
+            --shadow: 0 10px 40px -10px rgba(0,0,0,0.15);
+        }
 
-    /* Contenedor principal */
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 20px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-      padding: 20px;
-      backdrop-filter: blur(8px);
-      max-width: 1000px;
-      width: 100%;
-      gap: 25px;
-    }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text);
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-    /* Sección de ruleta + botones */
-    .top-section {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 20px;
-      flex-wrap: wrap;
-    }
+        .app {
+            background: var(--card-bg);
+            width: 100%;
+            max-width: 500px; /* Ancho máximo ideal para móvil */
+            min-height: 90vh;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
 
-    #wheelCanvas {
-      border-radius: 50%;
-      box-shadow: 0 0 15px rgba(0,0,0,0.6);
-      max-width: 100%;
-      height: auto;
-    }
+        .screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 15px;
+            width: 100%;
+            height: 100%;
+            box-sizing: border-box;
+            animation: fadeIn 0.4s ease;
+            overflow-y: auto;
+        }
+        .screen.active { display: flex; }
 
-    .wheel-wrapper {
-      position: relative;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-    .selector {
-      width: 0;
-      height: 0;
-      border-left: 20px solid transparent;
-      border-right: 20px solid transparent;
-      border-top: 30px solid #ffdd00;
-      position: absolute;
-      top: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      filter: drop-shadow(0 0 5px black);
-    }
+        h1, h2 { margin: 0 0 15px 0; text-align: center; color: var(--text); }
+        h1 { font-size: 2rem; background: -webkit-linear-gradient(45deg, var(--primary), var(--secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
-    /* Botones */
-    .buttons {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      align-items: stretch;
-    }
-    button {
-      padding: 10px 20px;
-      background: linear-gradient(90deg, #1565c0, #1e88e5);
-      color: white;
-      border: none;
-      border-radius: 25px;
-      font-size: 15px;
-      cursor: pointer;
-      transition: transform 0.2s ease, background 0.3s;
-    }
-    button:hover {
-      transform: scale(1.05);
-      background: linear-gradient(90deg, #1e88e5, #42a5f5);
-    }
-    .active-mode {
-      background: linear-gradient(90deg, #0d47a1, #1976d2) !important;
-      box-shadow: 0 0 10px #42a5f5;
-    }
+        /* BOTONES */
+        .btn {
+            background: white;
+            border: 1px solid rgba(0,0,0,0.05);
+            color: var(--text);
+            padding: 16px;
+            border-radius: 14px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            transition: transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn:active { transform: scale(0.97); background: #f5f5f5; }
+        .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 15px -5px rgba(92, 107, 192, 0.4); }
+        .btn-sm { width: auto; padding: 8px 16px; font-size: 0.9rem; margin: 0; height: 36px;}
+        
+        .nav { width: 100%; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
+        .timer { font-family: 'Courier New', monospace; font-size: 1.4rem; font-weight: bold; color: var(--primary); }
 
-    /* Panel de resultados */
-    .info-panel {
-      text-align: center;
-      animation: fadeIn 1s ease;
-      color: white;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: all 0.6s ease;
-      width: 100%;
-    }
-    .info-panel.show {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .info-header {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      margin-bottom: 10px;
-      flex-wrap: wrap;
-    }
-    .flag-img {
-      width: 60px;
-      height: 40px;
-      object-fit: cover;
-      border-radius: 4px;
-      box-shadow: 0 0 4px rgba(0,0,0,0.3);
-    }
-    .country-name {
-      font-size: 26px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-    h3 {
-      margin-top: 15px;
-      color: #00e5ff;
-      font-size: 17px;
-    }
-    .pill {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.15);
-      padding: 6px 12px;
-      border-radius: 20px;
-      margin: 5px;
-      font-size: 14px;
-    }
-    .pill a {
-      color: #fff;
-      text-decoration: none;
-    }
-    .pill a:hover {
-      text-decoration: underline;
-    }
+        /* --- SOPA DE LETRAS (12x12) --- */
+        #sopa-grid {
+            display: grid;
+            grid-template-columns: repeat(12, 1fr); /* 12x12 equilibra cantidad y tamaño */
+            gap: 2px;
+            background: transparent;
+            width: 100%;
+            aspect-ratio: 1;
+            touch-action: none; 
+            margin-bottom: 15px;
+        }
+        .cell {
+            background: #f4f6f8;
+            border-radius: 6px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: 800;
+            font-size: 1.1rem; /* Tamaño legible */
+            color: #546e7a;
+            cursor: pointer;
+            transition: background 0.1s;
+        }
+        @media (min-width: 400px) { .cell { font-size: 1.3rem; } } /* Más grande si la pantalla lo permite */
 
-    /* Historial */
-    .history-panel {
-      margin-top: 20px;
-      max-height: 150px;
-      overflow-y: auto;
-      background: rgba(0,0,0,0.4);
-      padding: 10px;
-      border-radius: 10px;
-      font-size: 14px;
-      text-align: left;
-    }
+        .cell.highlight { background: var(--secondary); color: white; transform: scale(1.05); }
+        .cell.found { background: var(--primary); color: white; }
 
-    /* Marca de agua */
-    .watermark {
-      position: absolute;
-      bottom: 60px;
-      right: 20px;
-      font-size: 18px;
-      color: rgba(255,255,255,0.2);
-      transform: rotate(-20deg);
-      pointer-events: none;
-      user-select: none;
-    }
+        /* --- SUDOKU --- */
+        #sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 1px;
+            background: #333;
+            border: 2px solid #333;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            overflow: hidden;
+            width: 100%;
+            max-width: 400px;
+        }
+        .sudo-cell {
+            background: white;
+            aspect-ratio: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            color: #333;
+        }
+        .sudo-cell:nth-child(3n) { border-right: 2px solid #333; }
+        .sudo-cell:nth-child(9n) { border-right: none; }
+        .sudo-cell:nth-child(n+19):nth-child(-n+27),
+        .sudo-cell:nth-child(n+46):nth-child(-n+54) { border-bottom: 2px solid #333; }
+        .sudo-cell.fixed { background: #e0e0e0; font-weight: bold; }
+        .sudo-cell.selected { background: #bbdefb; }
+        .sudo-cell.error { color: #d32f2f; background: #ffcdd2; }
 
-    /* Copyright */
-    footer {
-      margin-top: 15px;
-      font-size: 14px;
-      color: rgba(255,255,255,0.6);
-      text-align: center;
-    }
+        .numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 5px; width: 100%; max-width: 400px; }
+        .num-btn { padding: 10px; font-size: 1.2rem; border: 1px solid #cfd8dc; background: white; border-radius: 8px; color: var(--text); }
+        
+        /* --- MEMORIA --- */
+        #memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; padding: 10px 0; }
+        .card {
+            aspect-ratio: 1; background: var(--primary); border-radius: 10px; cursor: pointer;
+            display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s;
+        }
+        .card.flipped { background: white; border: 2px solid var(--primary); transform: rotateY(180deg); }
+        .card-content { display: none; }
+        .card.flipped .card-content { display: block; transform: rotateY(180deg); }
 
-    /* 📱 Adaptación móvil */
-    @media (max-width: 768px) {
-      .top-section {
-        flex-direction: column;
-      }
-      #wheelCanvas {
-        width: 90vw;
-        height: auto;
-      }
-      .buttons {
-        width: 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        justify-content: center;
-      }
-    }
-  </style>
+        /* --- RETO MATEMÁTICO --- */
+        .math-box { background: #fff; padding: 20px; border-radius: 16px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; width: 100%; }
+        .equation { font-size: 2.5rem; font-weight: bold; color: var(--text); margin-bottom: 5px; }
+        .math-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+        .math-btn { font-size: 1.3rem; padding: 15px; }
+
+    </style>
 </head>
 <body>
-  <h1>🌍 Gastronomía Mundial</h1>
-  <div class="container">
-    <!-- Ruleta + botones -->
-    <div class="top-section">
-      <div class="wheel-wrapper">
-        <div class="selector"></div>
-        <canvas id="wheelCanvas" width="350" height="350"></canvas>
-      </div>
-      <div class="buttons">
-        <button id="spinButton">🎡 ¡Girar!</button>
-        <button id="historyButton">📜 Ver historial</button>
-        <button id="clearHistory">🧹 Borrar historial</button>
-        <button id="resetWheel">🔄 Reiniciar ruleta</button>
-        <button id="toggleMode">🎲 Modo sin repetición</button>
-      </div>
-    </div>
-    <!-- Panel de resultados -->
-    <div class="info-panel" id="infoPanel">
-      <h2>A ver qué toca cocinar</h2>
-    </div>
-  </div>
-  <div class="history-panel" id="historyPanel" style="display:none;"></div>
 
-  <!-- Marca de agua -->
-  <div class="watermark">Maarteeno © 2025</div>
-  <!-- Footer -->
-  <footer>Maarteeno © 2025</footer>
+<div class="app">
 
-  <!-- Confetti -->
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-
-  <script>
-    const countries = [
-      {name:"España",continent:"Europa",region:"Sur",code:"es",foods:["Paella","Jamón ibérico"],drinks:["Sangría","Cava"]},
-      {name:"Perú",continent:"América",region:"Sur",code:"pe",foods:["Ceviche","Lomo saltado"],drinks:["Pisco Sour","Chicha morada"]},
-      {name:"México",continent:"América",region:"Norte",code:"mx",foods:["Tacos","Mole"],drinks:["Tequila","Margarita"]},
-      {name:"Chile",continent:"América",region:"Sur",code:"cl",foods:["Empanadas","Pastel de choclo"],drinks:["Vino chileno","Pisco"]},
-      {name:"China",continent:"Asia",region:"Este",code:"cn",foods:["Dim sum","Pato pekinés"],drinks:["Té verde","Baijiu"]},
-      {name:"Japón",continent:"Asia",region:"Este",code:"jp",foods:["Sushi","Ramen"],drinks:["Sake","Té matcha"]},
-      {name:"Italia",continent:"Europa",region:"Sur",code:"it",foods:["Pizza","Pasta"],drinks:["Vino tinto","Limoncello"]},
-      {name:"Tailandia",continent:"Asia",region:"Sudeste",code:"th",foods:["Pad Thai","Curry verde"],drinks:["Té helado","Agua de coco"]},
-      {name:"Argentina",continent:"América",region:"Sur",code:"ar",foods:["Asado","Empanadas"],drinks:["Fernet","Malbec"]},
-      {name:"Brasil",continent:"América",region:"Sur",code:"br",foods:["Feijoada","Pão de queijo"],drinks:["Caipirinha","Guaraná"]},
-      {name:"Estados Unidos",continent:"América",region:"Norte",code:"us",foods:["Hamburguesa","BBQ ribs"],drinks:["Coca-Cola","Root beer"]},
-      {name:"Francia",continent:"Europa",region:"Oeste",code:"fr",foods:["Croissant","Coq au vin"],drinks:["Champagne","Vino blanco"]},
-      {name:"Grecia",continent:"Europa",region:"Sur",code:"gr",foods:["Gyros","Moussaka"],drinks:["Ouzo","Vino griego"]},
-      {name:"Marruecos",continent:"África",region:"Norte",code:"ma",foods:["Cuscús","Tajín"],drinks:["Té de menta","Jugo de naranja"]},
-      {name:"Turquía",continent:"Eurasia",region:"Occidental",code:"tr",foods:["Kebab","Baklava"],drinks:["Ayran","Café turco"]},
-      {name:"Corea del Sur",continent:"Asia",region:"Este",code:"kr",foods:["Kimchi","Bibimbap"],drinks:["Soju","Té de cebada"]},
-      {name:"Vietnam",continent:"Asia",region:"Sudeste",code:"vn",foods:["Pho","Banh mi"],drinks:["Café vietnamita","Té helado"]},
-      {name:"India",continent:"Asia",region:"Sur",code:"in",foods:["Curry","Biryani"],drinks:["Lassi","Chai"]},
-      {name:"Rusia",continent:"Europa/Asia",region:"Este",code:"ru",foods:["Borsch","Pelmeni"],drinks:["Vodka","Kvas"]},
-      {name:"Egipto",continent:"África",region:"Norte",code:"eg",foods:["Koshari","Falafel"],drinks:["Hibiscus","Cerveza local"]}
-    ];
-
-    const canvas = document.getElementById("wheelCanvas");
-    const ctx = canvas.getContext("2d");
-    const spinButton = document.getElementById("spinButton");
-    const infoPanel = document.getElementById("infoPanel");
-    const historyButton = document.getElementById("historyButton");
-    const clearHistory = document.getElementById("clearHistory");
-    const resetWheel = document.getElementById("resetWheel");
-    const toggleMode = document.getElementById("toggleMode");
-    const historyPanel = document.getElementById("historyPanel");
-
-    let originalCountries = [...countries];
-    let currentAngle = 0;
-    let isSpinning = false;
-    let history = JSON.parse(localStorage.getItem("ruletaHistory")) || [];
-    let modeSinRepeticion = false;
-
-    function drawWheel(highlightIndex = -1) {
-      const slices = countries.length;
-      const sliceAngle = 2 * Math.PI / slices;
-      for (let i = 0; i < slices; i++) {
-        const angle = i * sliceAngle;
-        ctx.beginPath();
-        ctx.moveTo(175, 175);
-        ctx.arc(175, 175, 175, angle, angle + sliceAngle);
-        ctx.fillStyle = (i === highlightIndex) ? "#ffd600" : (i % 2 === 0 ? "#1e88e5" : "#3949ab");
-        ctx.fill();
-        ctx.save();
-        ctx.translate(175, 175);
-        ctx.rotate(angle + sliceAngle / 2);
-        ctx.textAlign = "right";
-        ctx.fillStyle = "white";
-        ctx.font = "13px Lexend";
-        ctx.fillText(countries[i].name, 155, 0);
-        ctx.restore();
-      }
-    }
-
-    function lanzarConfeti() {
-      confetti({
-        particleCount: 120,
-        spread: 80,
-        origin: { y: 0.6 }
-      });
-    }
-
-    function spinWheel() {
-      if (isSpinning || countries.length === 0) return;
-      isSpinning = true;
-      let rotation = Math.random() * 360 + 360 * 5;
-      let start = null;
-
-      function animate(timestamp) {
-        if (!start) start = timestamp;
-        let progress = timestamp - start;
-        let easeOut = rotation * (1 - Math.pow(1 - progress / 2000, 3));
-        currentAngle = (currentAngle + easeOut) % 360;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.save();
-        ctx.translate(175, 175);
-        ctx.rotate(currentAngle * Math.PI / 180);
-        ctx.translate(-175, -175);
-        drawWheel();
-        ctx.restore();
-
-        if (progress < 2000) {
-          requestAnimationFrame(animate);
-        } else {
-          isSpinning = false;
-          let finalRad = (currentAngle * Math.PI / 180) % (2 * Math.PI);
-          let selectorAngle = 1.5 * Math.PI;
-          let diff = (selectorAngle - finalRad + 2 * Math.PI) % (2 * Math.PI);
-          let selectedIndex = Math.floor(diff / (2 * Math.PI / countries.length)) % countries.length;
-          let selectedCountry = countries[selectedIndex];
-
-          infoPanel.classList.add("show");
-          showCountryInfo(selectedCountry);
-
-          history.push(selectedCountry.name);
-          localStorage.setItem("ruletaHistory", JSON.stringify(history));
-
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
-          ctx.save();
-          ctx.translate(175, 175);
-          ctx.rotate(currentAngle * Math.PI / 180);
-          ctx.translate(-175, -175);
-          drawWheel(selectedIndex);
-          ctx.restore();
-
-          if (modeSinRepeticion) {
-            countries.splice(selectedIndex, 1);
-          }
-
-          lanzarConfeti();
-        }
-      }
-      requestAnimationFrame(animate);
-    }
-
-    function makeLink(term) {
-      return `<a href="https://www.google.com/search?q=${encodeURIComponent(term + ' receta')}" target="_blank">${term}</a>`;
-    }
-
-    function showCountryInfo(country) {
-      infoPanel.innerHTML = `
-        <div class="info-header">
-          <img class="flag-img" src="https://flagcdn.com/w80/${country.code}.png" alt="Bandera de ${country.name}">
-          <span class="country-name">${country.name}</span>
+    <div id="screen-home" class="screen active">
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:center; width:100%">
+            <h1>🧠 Brain Gym</h1>
+            <p style="text-align:center; color:#78909c; margin-bottom:30px;">Gimnasio Mental 5.0</p>
+            
+            <button class="btn" onclick="showSopaMenu()">
+                <span style="font-size:1.5rem">🔤</span> Sopa de Letras
+            </button>
+            <button class="btn" onclick="initSudoku()">
+                <span style="font-size:1.5rem">🔢</span> Sudoku
+            </button>
+            <button class="btn" onclick="initMemory()">
+                <span style="font-size:1.5rem">🃏</span> Memoria
+            </button>
+            <button class="btn" onclick="initMath()">
+                <span style="font-size:1.5rem">🧮</span> Cálculo
+            </button>
         </div>
-        <p>${country.continent} – ${country.region}</p>
-        <h3>🍽️ Comidas típicas</h3>
-        <div class="pill">${makeLink(country.foods[0])}</div>
-        <div class="pill">${makeLink(country.foods[1])}</div>
-        <h3>🥂 Bebidas típicas</h3>
-        <div class="pill">${makeLink(country.drinks[0])}</div>
-        <div class="pill">${makeLink(country.drinks[1])}</div>
-      `;
+    </div>
+
+    <div id="screen-sopa-menu" class="screen">
+        <div class="nav">
+            <h2>Elige Tema</h2>
+            <button class="btn-sm btn" onclick="goHome()">Volver</button>
+        </div>
+        <div style="width:100%; display:grid; gap:8px;">
+            <button class="btn" onclick="initSopa('paises')">🌍 Países</button>
+            <button class="btn" onclick="initSopa('comidas')">🍕 Comidas</button>
+            <button class="btn" onclick="initSopa('animales')">🐶 Animales</button>
+            <button class="btn" onclick="initSopa('profesiones')">👨‍⚕️ Profesiones</button>
+            <button class="btn" onclick="initSopa('cuerpo')">👃 Cuerpo Humano</button>
+            <button class="btn btn-primary" onclick="initSopa('todo')">🚀 Mix (8 a 20 palabras)</button>
+        </div>
+    </div>
+
+    <div id="screen-sopa-game" class="screen">
+        <div class="nav">
+            <span id="sopa-cat-title" style="font-weight:bold; color:var(--primary); font-size: 0.9rem;"></span>
+            <div id="sopa-timer" class="timer">00:00</div>
+            <button class="btn-sm btn" onclick="stopSopa(); showSopaMenu()">✖</button>
+        </div>
+        
+        <div id="sopa-grid"></div>
+        
+        <div id="sopa-words" style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;"></div>
+    </div>
+
+    <div id="screen-sudoku" class="screen">
+        <div class="nav">
+            <h2>Sudoku</h2>
+            <button class="btn-sm btn" onclick="goHome()">Salir</button>
+        </div>
+        <div id="sudoku-board"></div>
+        <div class="numpad">
+            <button class="num-btn" onclick="fillSudoku(1)">1</button>
+            <button class="num-btn" onclick="fillSudoku(2)">2</button>
+            <button class="num-btn" onclick="fillSudoku(3)">3</button>
+            <button class="num-btn" onclick="fillSudoku(4)">4</button>
+            <button class="num-btn" onclick="fillSudoku(5)">5</button>
+            <button class="num-btn" onclick="fillSudoku(6)">6</button>
+            <button class="num-btn" onclick="fillSudoku(7)">7</button>
+            <button class="num-btn" onclick="fillSudoku(8)">8</button>
+            <button class="num-btn" onclick="fillSudoku(9)">9</button>
+            <button class="num-btn" style="color:var(--accent)" onclick="fillSudoku(null)">⌫</button>
+        </div>
+        <div style="margin-top:20px; display:flex; gap:10px; width:100%">
+            <button class="btn btn-primary" onclick="checkSudoku()">Verificar</button>
+            <button class="btn" onclick="initSudoku()">Nuevo</button>
+        </div>
+    </div>
+
+    <div id="screen-memory" class="screen">
+        <div class="nav">
+            <h2>Memoria</h2>
+            <button class="btn-sm btn" onclick="goHome()">Salir</button>
+        </div>
+        <div id="memory-grid"></div>
+    </div>
+
+    <div id="screen-math" class="screen">
+        <div class="nav">
+            <h2>Cálculo</h2>
+            <button class="btn-sm btn" onclick="stopMath(); goHome()">Salir</button>
+        </div>
+        <div class="math-box">
+            <div class="equation" id="math-eq"></div>
+            <div style="font-size:1.2rem; color:var(--primary)">Puntos: <span id="math-score">0</span> | Tiempo: <span id="math-time">30</span></div>
+        </div>
+        <div class="math-options" id="math-opts"></div>
+    </div>
+
+</div>
+
+<script>
+    /* ================= NAVEGACIÓN ================= */
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+    function goHome() { showScreen('screen-home'); }
+    function showSopaMenu() { showScreen('screen-sopa-menu'); }
+
+    /* ================= 1. SOPA DE LETRAS PRO (DYNAMIC) ================= */
+    // BASE DE DATOS EXTENDIDA (40+ Palabras por categoría)
+    const sopaDB = {
+        paises: [
+            "ARGENTINA","BOLIVIA","BRASIL","CHILE","COLOMBIA","ECUADOR","PARAGUAY","PERU","URUGUAY","VENEZUELA",
+            "MEXICO","USA","CANADA","PANAMA","CUBA","ESPAÑA","FRANCIA","ITALIA","ALEMANIA","PORTUGAL",
+            "RUSIA","CHINA","JAPON","INDIA","COREA","EGIPTO","MARRUECOS","SUDAFRICA","AUSTRALIA","UEVAZELANDA",
+            "SUECIA","NORUEGA","FINLANDIA","DINAMARCA","POLONIA","GRECIA","TURQUIA","ISRAEL","IRAN","IRAK",
+            "VIETNAM","THAILANDIA"
+        ],
+        comidas: [
+            "PIZZA","HAMBURGUESA","PERRITO","SANDWICH","TACOS","BURRITO","NACHOS","QUESADILLA",
+            "SUSHI","SASHIMI","RAMEN","GYOZAS","ARROZ","PASTA","LASAÑA","RAVIOLIS","MACARRONES",
+            "POLLO","TERNERA","CERDO","CORDERO","PESCADO","SALMON","ATUN","GAMBAS","CALAMARES",
+            "ENSALADA","SOPA","CREMA","PURE","PATATAS","HUEVOS","TORTILLA","PAN","QUESO","JAMON",
+            "CHOCOLATE","HELADO","TARTA","FRUTA","MANZANA","PLATANO"
+        ],
+        animales: [
+            "PERRO","GATO","HAMSTER","CONEJO","PAJARO","PEZ","TORTUGA","LORO","CANARIO",
+            "LEON","TIGRE","ELEFANTE","JIRAFA","ZEBRA","HIPOPOTAMO","RINOCERONTE","MONO","GORILA",
+            "OSO","PANDA","POLAR","LOBO","ZORRO","CIERVO","JABALI","CABALLO","VACA","OVEJA",
+            "CERDO","GALLINA","PATO","AGUILA","BUHO","HALCON","DELFIN","BALLENA","TIBURON",
+            "PULPO","CANGREJO","SERPIENTE","COCODRILO","RANA"
+        ],
+        profesiones: [
+            "MEDICO","ENFERMERO","CIRUJANO","DENTISTA","VETERINARIO","PSICOLOGO",
+            "PROFESOR","MAESTRO","DIRECTOR","ESTUDIANTE","CIENTIFICO","INVESTIGADOR",
+            "INGENIERO","ARQUITECTO","ALBAÑIL","FONTANERO","ELECTRICISTA","CARPINTERO","PINTOR",
+            "POLICIA","BOMBERO","MILITAR","PILOTO","AZAFATA","CONDUCTOR","TAXISTA","CAMIONERO",
+            "ABOGADO","JUEZ","POLITICO","PERIODISTA","ESCRITOR","MUSICO","ACTOR","CANTANTE",
+            "PINTOR","ARTISTA","COCINERO","CAMARERO","PANADERO"
+        ],
+        cuerpo: [
+            "CABEZA","CARA","PELO","OJOS","NARIZ","BOCA","DIENTES","LENGUA","OREJAS",
+            "CUELLO","HOMBRO","BRAZO","CODO","MANO","DEDOS","UÑAS","PECHO","ESPALDA",
+            "BARRIGA","CINTURA","CADERA","PIERNA","RODILLA","TOBILLO","PIE","TALON",
+            "CORAZON","PULMON","ESTOMAGO","HIGADO","RIÑON","INTESTINO","HUESO","MUSCULO",
+            "SANGRE","PIEL","CEREBRO","NERVIO","VENA","ARTERIA"
+        ],
+        todo: []
+    };
+    // Generar 'todo' dinámicamente
+    sopaDB.todo = [].concat(...Object.values(sopaDB));
+
+    let sGridSize = 12; // Grid 12x12
+    let sMatrix = [], sWords = [], sFound = [];
+    let sTimerInterval, sSeconds = 0, sTimerStarted = false;
+    let isSwiping = false, swipeStart = null, currentHighlight = [];
+
+    function initSopa(cat) {
+        showScreen('screen-sopa-game');
+        document.getElementById('sopa-cat-title').textContent = cat.toUpperCase();
+        
+        clearInterval(sTimerInterval);
+        sSeconds = 0; sTimerStarted = false;
+        document.getElementById('sopa-timer').textContent = "00:00";
+
+        // --- LÓGICA DE DENSIDAD DINÁMICA ---
+        // 1. Obtener lista completa y barajar
+        let fullList = sopaDB[cat].sort(() => Math.random() - 0.5);
+        
+        // 2. Elegir cantidad aleatoria entre 8 y 20
+        let minWords = 8;
+        let maxWords = 20;
+        let count = Math.floor(Math.random() * (maxWords - minWords + 1)) + minWords;
+        
+        // 3. Seleccionar palabras (cortar array)
+        sWords = fullList.slice(0, count);
+        sFound = [];
+
+        generateSopaGrid();
+        renderSopa();
     }
 
-    historyButton.addEventListener("click", () => {
-      historyPanel.style.display = historyPanel.style.display === "none" ? "block" : "none";
-      historyPanel.innerHTML = "<strong>Historial:</strong><br>" + (history.length ? history.join("<br>") : "Vacío");
-    });
+    function startSopaTimer() {
+        if(sTimerStarted) return;
+        sTimerStarted = true;
+        sTimerInterval = setInterval(() => {
+            sSeconds++;
+            let m = Math.floor(sSeconds/60).toString().padStart(2,'0');
+            let s = (sSeconds%60).toString().padStart(2,'0');
+            document.getElementById('sopa-timer').textContent = `${m}:${s}`;
+        }, 1000);
+    }
+    function stopSopa() { clearInterval(sTimerInterval); }
 
-    clearHistory.addEventListener("click", () => {
-      history = [];
-      localStorage.removeItem("ruletaHistory");
-      historyPanel.innerHTML = "";
-    });
+    function generateSopaGrid() {
+        sMatrix = Array(sGridSize).fill().map(() => Array(sGridSize).fill(''));
+        let wordsPlaced = [];
 
-    resetWheel.addEventListener("click", () => {
-      countries = [...originalCountries];
-      history = [];
-      localStorage.removeItem("ruletaHistory");
-      drawWheel();
-      infoPanel.innerHTML = "<h2>A ver qué toca cocinar</h2>";
-    });
+        // Intentar colocar las palabras seleccionadas
+        for(let word of sWords) {
+            // Filtrar palabras muy largas si la grilla es pequeña (opcional, pero seguro)
+            if(word.length > sGridSize) continue;
 
-    toggleMode.addEventListener("click", () => {
-      modeSinRepeticion = !modeSinRepeticion;
-      toggleMode.classList.toggle("active-mode", modeSinRepeticion);
-      toggleMode.textContent = modeSinRepeticion ? "✅ Modo sin repetición" : "🎲 Modo sin repetición";
-    });
+            let placed = false, attempts = 0;
+            while(!placed && attempts++ < 150) {
+                let dir = Math.floor(Math.random()*3); // 0:H, 1:V, 2:D
+                let r = Math.floor(Math.random()*sGridSize);
+                let c = Math.floor(Math.random()*sGridSize);
+                if(checkFit(word, r, c, dir)) {
+                    for(let i=0; i<word.length; i++) {
+                        let nr = r + (dir===1||dir===2 ? i : 0);
+                        let nc = c + (dir===0||dir===2 ? i : 0);
+                        sMatrix[nr][nc] = word[i];
+                    }
+                    placed = true;
+                    wordsPlaced.push(word);
+                }
+            }
+        }
+        // Actualizar lista de palabras a las que REALMENTE cupieron (por si alguna falla)
+        sWords = wordsPlaced;
 
-    spinButton.addEventListener("click", spinWheel);
-    drawWheel();
-  </script>
+        // Rellenar huecos
+        const abc = "ABCDEFGHIJKLMNÑOPQRSTUVWXYZ";
+        for(let r=0; r<sGridSize; r++) for(let c=0; c<sGridSize; c++)
+            if(!sMatrix[r][c]) sMatrix[r][c] = abc[Math.floor(Math.random()*abc.length)];
+    }
+
+    function checkFit(w, r, c, dir) {
+        let len = w.length;
+        let er = r + (dir===1||dir===2 ? len-1 : 0);
+        let ec = c + (dir===0||dir===2 ? len-1 : 0);
+        if(er >= sGridSize || ec >= sGridSize) return false;
+        for(let i=0; i<len; i++) {
+            let nr = r + (dir===1||dir===2 ? i : 0);
+            let nc = c + (dir===0||dir===2 ? i : 0);
+            if(sMatrix[nr][nc] !== '' && sMatrix[nr][nc] !== w[i]) return false;
+        }
+        return true;
+    }
+
+    function renderSopa() {
+        const grid = document.getElementById('sopa-grid');
+        grid.innerHTML = '';
+        for(let r=0; r<sGridSize; r++) {
+            for(let c=0; c<sGridSize; c++) {
+                let d = document.createElement('div');
+                d.className = 'cell';
+                d.textContent = sMatrix[r][c];
+                d.dataset.r = r; d.dataset.c = c;
+                d.onmousedown = handleStart; d.onmouseenter = handleMove; d.onmouseup = handleEnd;
+                d.ontouchstart = (e) => { e.preventDefault(); handleStart.call(d); };
+                grid.appendChild(d);
+            }
+        }
+        grid.ontouchmove = (e) => {
+            e.preventDefault();
+            let el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY);
+            if(el && el.classList.contains('cell')) handleMove.call(el);
+        };
+        grid.ontouchend = handleEnd;
+
+        const list = document.getElementById('sopa-words');
+        list.innerHTML = '';
+        sWords.forEach(w => {
+            let sp = document.createElement('span');
+            sp.id = 'w-'+w; sp.textContent = w;
+            sp.style.padding="3px 6px"; sp.style.background="#eceff1"; sp.style.borderRadius="4px"; sp.style.fontSize="0.75rem";
+            list.appendChild(sp);
+        });
+    }
+
+    function handleStart() { startSopaTimer(); isSwiping=true; swipeStart=this; highlightCells(this); }
+    function handleMove() { if(isSwiping && swipeStart) highlightCells(this); }
+    function highlightCells(end) {
+        currentHighlight.forEach(c => c.classList.remove('highlight'));
+        currentHighlight = [];
+        let r1 = +swipeStart.dataset.r, c1 = +swipeStart.dataset.c;
+        let r2 = +end.dataset.r, c2 = +end.dataset.c;
+        let dr = r2-r1, dc = c2-c1;
+        let steps = Math.max(Math.abs(dr), Math.abs(dc));
+        if(dr!==0 && dc!==0 && Math.abs(dr)!==Math.abs(dc)) return;
+        
+        for(let i=0; i<=steps; i++) {
+            let nr = r1 + (dr===0?0:dr/steps)*i, nc = c1 + (dc===0?0:dc/steps)*i;
+            let cell = document.querySelector(`.cell[data-r="${nr}"][data-c="${nc}"]`);
+            if(cell) { cell.classList.add('highlight'); currentHighlight.push(cell); }
+        }
+    }
+    function handleEnd() {
+        if(!isSwiping) return;
+        isSwiping = false;
+        let word = currentHighlight.map(c => c.textContent).join('');
+        let rev = word.split('').reverse().join('');
+        let match = null;
+        if(sWords.includes(word) && !sFound.includes(word)) match = word;
+        else if(sWords.includes(rev) && !sFound.includes(rev)) match = rev;
+
+        if(match) {
+            sFound.push(match);
+            currentHighlight.forEach(c => { c.classList.remove('highlight'); c.classList.add('found'); });
+            let wEl = document.getElementById('w-'+match);
+            if(wEl) {
+                wEl.style.background = "var(--primary)"; wEl.style.color = "white"; wEl.style.textDecoration = "line-through";
+            }
+            if(sFound.length === sWords.length) { setTimeout(() => alert("¡Ganaste!"), 100); stopSopa(); }
+        } else {
+            currentHighlight.forEach(c => c.classList.remove('highlight'));
+        }
+        currentHighlight = []; swipeStart = null;
+    }
+
+    /* ================= 2. SUDOKU ================= */
+    let sudoSol = [], sudoPuz = [], selSudo = null;
+    function initSudoku() {
+        showScreen('screen-sudoku');
+        let base = [[1,2,3,4,5,6,7,8,9],[4,5,6,7,8,9,1,2,3],[7,8,9,1,2,3,4,5,6],[2,3,4,5,6,7,8,9,1],[5,6,7,8,9,1,2,3,4],[8,9,1,2,3,4,5,6,7],[3,4,5,6,7,8,9,1,2],[6,7,8,9,1,2,3,4,5],[9,1,2,3,4,5,6,7,8]];
+        let map = [1,2,3,4,5,6,7,8,9].sort(()=>Math.random()-0.5);
+        sudoSol = base.map(row => row.map(n => map[n-1]));
+        sudoPuz = sudoSol.map(r => [...r]);
+        let holes = 40;
+        while(holes>0) { let r=Math.floor(Math.random()*9), c=Math.floor(Math.random()*9); if(sudoPuz[r][c]!==0){ sudoPuz[r][c]=0; holes--; } }
+        
+        const b = document.getElementById('sudoku-board'); b.innerHTML = ''; selSudo = null;
+        for(let i=0; i<81; i++) {
+            let d = document.createElement('div'); d.className = 'sudo-cell';
+            let r=Math.floor(i/9), c=i%9;
+            if(sudoPuz[r][c]!==0) { d.textContent=sudoPuz[r][c]; d.classList.add('fixed'); }
+            else d.onclick = () => { if(selSudo) selSudo.classList.remove('selected'); selSudo=d; d.classList.add('selected'); };
+            b.appendChild(d);
+        }
+    }
+    function fillSudoku(n) { if(selSudo) { selSudo.textContent = n?n:''; selSudo.classList.remove('error'); } }
+    function checkSudoku() {
+        let err=0, mt=0, cells=document.querySelectorAll('.sudo-cell');
+        cells.forEach((d,i) => {
+            let val = parseInt(d.textContent)||0;
+            if(val===0) mt++;
+            else if(val !== sudoSol[Math.floor(i/9)][i%9] && !d.classList.contains('fixed')) { d.classList.add('error'); err++; }
+        });
+        alert(err===0 && mt===0 ? "¡Correcto!" : `Errores: ${err}, Vacíos: ${mt}`);
+    }
+
+    /* ================= 3. MEMORIA ================= */
+    const memoThemes = [
+        ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼"],
+        ["⚽","🏀","🏈","🎾","🎱","🎳","⛳","🥊"],
+        ["🍏","🍔","🍕","🍪","🌮","🍦","🍩","🍟"],
+        ["😀","😎","😍","🤔","😴","🤢","🤡","👻"]
+    ];
+    let flipCards = [], lock = false;
+
+    function initMemory() {
+        showScreen('screen-memory');
+        const grid = document.getElementById('memory-grid'); grid.innerHTML=''; flipCards=[]; lock=false;
+        let theme = memoThemes[Math.floor(Math.random()*memoThemes.length)];
+        let deck = [...theme, ...theme].sort(()=>Math.random()-0.5);
+        deck.forEach(icon => {
+            let c = document.createElement('div'); c.className = 'card';
+            c.innerHTML = `<div class="card-content">${icon}</div>`;
+            c.onclick = () => {
+                if(lock || c.classList.contains('flipped')) return;
+                c.classList.add('flipped'); flipCards.push({c, icon});
+                if(flipCards.length===2) {
+                    lock=true;
+                    if(flipCards[0].icon === flipCards[1].icon) { flipCards=[]; lock=false; if(!document.querySelectorAll('.card:not(.flipped)').length) setTimeout(()=>alert("¡Ganaste!"),500); }
+                    else setTimeout(() => { flipCards[0].c.classList.remove('flipped'); flipCards[1].c.classList.remove('flipped'); flipCards=[]; lock=false; }, 1000);
+                }
+            };
+            grid.appendChild(c);
+        });
+    }
+
+    /* ================= 4. MATEMÁTICAS ================= */
+    let mathScore = 0, mathTime = 30, mathInterval, currentAns = 0;
+    function initMath() {
+        showScreen('screen-math'); mathScore = 0; mathTime = 30;
+        document.getElementById('math-score').textContent = "0"; document.getElementById('math-time').textContent = "30";
+        newMathQ();
+        mathInterval = setInterval(() => {
+            mathTime--; document.getElementById('math-time').textContent = mathTime;
+            if(mathTime <= 0) { clearInterval(mathInterval); alert(`¡Tiempo! Puntos: ${mathScore}`); goHome(); }
+        }, 1000);
+    }
+    function stopMath() { clearInterval(mathInterval); }
+    function newMathQ() {
+        let op = Math.random() < 0.5 ? '+' : (Math.random()<0.5 ? '-' : '*');
+        let a = Math.floor(Math.random()*12)+1, b = Math.floor(Math.random()*12)+1;
+        if(op === '*') { a = Math.floor(Math.random()*9)+1; b = Math.floor(Math.random()*9)+1; }
+        currentAns = eval(`${a} ${op} ${b}`);
+        document.getElementById('math-eq').textContent = `${a} ${op} ${b}`;
+        let opts = [currentAns];
+        while(opts.length < 4) { let fake = currentAns + Math.floor(Math.random()*10) - 5; if(fake !== currentAns && !opts.includes(fake) && fake > 0) opts.push(fake); }
+        opts.sort(() => Math.random() - 0.5);
+        let c = document.getElementById('math-opts'); c.innerHTML = '';
+        opts.forEach(o => {
+            let btn = document.createElement('button'); btn.className = 'btn btn-primary math-btn'; btn.textContent = o;
+            btn.onclick = () => {
+                if(o === currentAns) { mathScore += 10; document.getElementById('math-score').textContent = mathScore; btn.style.background = "#4caf50"; setTimeout(newMathQ, 200); }
+                else { mathScore = Math.max(0, mathScore - 5); document.getElementById('math-score').textContent = mathScore; btn.style.background = "#ef5350"; }
+            };
+            c.appendChild(btn);
+        });
+    }
+</script>
 </body>
 </html>
