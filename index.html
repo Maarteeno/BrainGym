@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Brain Gym 7.0</title>
+    <title>Brain Gym 8.0</title>
     <style>
         :root {
             --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -109,7 +109,6 @@
         .nav-controls { display: flex; }
 
         .stat-box { font-family: monospace; font-size: 1.1rem; color: var(--primary); background: rgba(128,128,128,0.1); padding: 5px 10px; border-radius: 8px; margin-right: 10px; }
-
         .theme-switch { position: absolute; top: 15px; right: 15px; font-size: 1.5rem; cursor: pointer; z-index: 100; }
 
         /* --- SOPA DE LETRAS --- */
@@ -131,7 +130,7 @@
 
         /* --- MEMORIA --- */
         #memory-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; padding: 10px 0; }
-        .card { aspect-ratio: 1; background: var(--primary); border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2.2rem; color: white; transition: transform 0.4s; transform-style: preserve-3d; }
+        .card { aspect-ratio: 1; background: var(--primary); border-radius: 12px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 2.5rem; color: white; transition: transform 0.4s; transform-style: preserve-3d; }
         .card.flipped { background: white; transform: rotateY(180deg); }
         .card-content { display: none; }
         .card.flipped .card-content { display: block; transform: rotateY(180deg); }
@@ -159,7 +158,7 @@
     <div id="screen-home" class="screen active">
         <div style="flex:1; display:flex; flex-direction:column; justify-content:center; width:100%">
             <h1>🧠 Brain Gym</h1>
-            <p style="text-align:center; color:var(--text-light); margin-bottom:30px;">Versión 7.0</p>
+            <p style="text-align:center; color:var(--text-light); margin-bottom:30px;">Versión 8.0</p>
             <button class="btn" onclick="showSopaMenu()"><span>🔤</span> Sopa de Letras</button>
             <button class="btn" onclick="initSudoku()"><span>🔢</span> Sudoku</button>
             <button class="btn" onclick="initMemory()"><span>🃏</span> Memoria</button>
@@ -289,7 +288,7 @@
     let swipe=false, sStart=null, sHigh=[];
 
     function initSopa(cat) {
-        sCurrentCat = cat; // Recordar categoría para reiniciar
+        sCurrentCat = cat; 
         showScreen('screen-sopa-game');
         document.getElementById('sopa-cat-title').textContent = cat.toUpperCase();
         stopSopa(); sTime=0; sActive=false;
@@ -405,13 +404,26 @@
         else alert(`Errores: ${err}, Vacíos: ${mt}`);
     }
 
-    // --- 3. MEMORIA ---
-    const memIcons = ["🍎","🍌","🍒","🍇","🍉","🍓","🍑","🍍"];
+    // --- 3. MEMORIA (MULTI-THEME) ---
+    const memThemes = [
+        ["🍎","🍌","🍒","🍇","🍉","🍓","🍑","🍍"], // Frutas
+        ["🐶","🐱","🐭","🐹","🐰","🦊","🐻","🐼"], // Animales
+        ["⚽","🏀","🏈","🎾","🎱","🎳","⛳","🥊"], // Deportes
+        ["😀","😂","😍","😎","😡","😱","🥶","🤡"], // Caras
+        ["🚀","🛸","🤖","👾","🔭","🌑","🌎","💻"], // Espacio
+        ["🎃","👻","💀","🕷️","🦇","🧛","🧟","🕸️"], // Halloween
+        ["🍔","🍕","🍟","🌭","🍿","🍩","🍪","🍦"]  // Comida
+    ];
     let memFlips=[], memLock=false;
+    
     function initMemory() {
         showScreen('screen-memory');
         const g=document.getElementById('memory-grid'); g.innerHTML=''; memFlips=[]; memLock=false;
-        let deck=[...memIcons, ...memIcons].sort(()=>Math.random()-0.5);
+        
+        // Seleccionar tema aleatorio
+        let theme = memThemes[Math.floor(Math.random() * memThemes.length)];
+        let deck = [...theme, ...theme].sort(()=>Math.random()-0.5);
+        
         deck.forEach(i => {
             let c=document.createElement('div'); c.className='card'; c.innerHTML=`<div class="card-content">${i}</div>`;
             c.onclick=()=>{
