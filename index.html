@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Brain Buddy - Ultimate 12</title>
+    <title>Brain Buddy - Ultimate 21</title>
     <style>
         :root {
             /* Palette Dark Elegant */
@@ -40,6 +40,7 @@
             flex-direction: column;
             overflow-x: hidden;
             overscroll-behavior: none;
+            user-select: none;
         }
 
         .container {
@@ -78,6 +79,7 @@
             padding: 20px;
             border: 1px solid var(--glass-border);
             position: relative;
+            display: flex; flex-direction: column; align-items: center;
         }
 
         /* --- Buttons --- */
@@ -120,8 +122,8 @@
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
             display: flex; flex-direction: column; justify-content: space-between;
-            width: 150px; /* Un poco más pequeño para que quepan bien */
-            height: 170px; 
+            width: 140px;
+            height: 160px; 
         }
         .game-card:hover {
             transform: translateY(-5px);
@@ -129,9 +131,9 @@
             background: rgba(255,255,255,0.08);
             border-color: var(--primary);
         }
-        .game-icon { font-size: 2.5rem; margin-bottom: 10px; display: block; filter: drop-shadow(0 0 8px rgba(255,255,255,0.1)); }
-        .game-title { font-size: 1rem; margin-bottom: 5px; color: var(--text-main); font-weight: 700; }
-        .game-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.2; }
+        .game-icon { font-size: 2.2rem; margin-bottom: 8px; display: block; filter: drop-shadow(0 0 8px rgba(255,255,255,0.1)); }
+        .game-title { font-size: 0.95rem; margin-bottom: 5px; color: var(--text-main); font-weight: 700; }
+        .game-desc { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 5px; line-height: 1.2; }
 
         /* --- Views --- */
         .view { display: none; animation: fadeIn 0.4s ease; width: 100%; }
@@ -147,6 +149,9 @@
             gap: 10px;
             padding-bottom: 15px;
             border-bottom: 1px solid var(--glass-border);
+            position: relative;
+            z-index: 50; 
+            width: 100%;
         }
         
         .controls-left, .controls-right { display: flex; gap: 10px; align-items: center; }
@@ -178,6 +183,7 @@
 
         #game-board-area {
             min-height: 400px;
+            width: 100%;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -186,37 +192,58 @@
             user-select: none;
         }
 
-        /* --- SHARED & SPECIFIC GAME STYLES --- */
+        /* --- GAME STYLES --- */
+        .memory-grid, .sudoku-grid, .schulte-grid, .matrix-grid, .chimp-grid, .eagle-grid, .hunt-grid, .slide-grid { display: grid; gap: 4px; margin: 0 auto; user-select: none; }
         
-        /* Grids */
-        .memory-grid, .sudoku-grid, .schulte-grid, .matrix-grid, .chimp-grid {
-            display: grid; gap: 4px; margin: 0 auto; user-select: none;
+        /* Sliding Puzzle */
+        .slide-grid { background: rgba(255,255,255,0.1); padding: 5px; border-radius: 12px; border: 1px solid var(--glass-border); }
+        .slide-tile {
+            aspect-ratio: 1;
+            border-radius: 6px;
+            cursor: pointer;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.1);
+            transition: transform 0.2s;
+            background-repeat: no-repeat;
         }
+        .slide-tile:not(.empty):hover { filter: brightness(1.1); transform: scale(0.98); }
+        .slide-tile.empty { background: transparent !important; box-shadow: none; cursor: default; }
+
+        /* Arkanoid */
+        #arkanoid-canvas {
+            background: rgba(15, 23, 42, 0.5);
+            border-radius: 12px;
+            border: 2px solid var(--glass-border);
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            touch-action: none;
+            width: 100%;
+            max-width: 400px; /* Big screen limit */
+            height: auto;
+            aspect-ratio: 360/500;
+        }
+
+        /* Equation Game */
+        .eq-container { width: 100%; max-width: 400px; font-size: 1.4rem; display: flex; flex-direction: column; gap: 12px; }
+        .eq-row { display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.05); padding: 12px 20px; border-radius: 12px; font-weight: bold; }
+        .eq-item { display: flex; gap: 10px; align-items: center; }
+        
+        /* Hunt Game */
+        .hunt-cell { font-size: 1.8rem; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; display: flex; justify-content: center; align-items: center; aspect-ratio: 1; }
+        .hunt-cell.found { background: var(--success); opacity: 0.5; pointer-events: none; transform: scale(0.9); }
+        
+        /* Eagle Vision */
+        .eagle-cell { background-color: var(--primary); border-radius: 6px; cursor: pointer; transition: transform 0.1s; border: none; }
+        .eagle-cell:active { transform: scale(0.95); }
         
         /* Memory */
-        .memory-card {
-            width: 60px; height: 60px; position: relative;
-            transform-style: preserve-3d; transition: transform 0.4s; cursor: pointer;
-        }
+        .memory-card { width: 60px; height: 60px; position: relative; transform-style: preserve-3d; transition: transform 0.4s; cursor: pointer; }
         .memory-card.flip { transform: rotateY(180deg); }
-        .front, .back {
-            width: 100%; height: 100%; position: absolute;
-            backface-visibility: hidden; border-radius: 10px;
-            display: flex; justify-content: center; align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid var(--glass-border);
-        }
+        .front, .back { width: 100%; height: 100%; position: absolute; backface-visibility: hidden; border-radius: 10px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); border: 1px solid var(--glass-border); }
         .front { background: #1e293b; transform: rotateY(180deg); font-size: 1.8rem; }
         .back { background: linear-gradient(135deg, #334155, #475569); }
 
-        /* Cells General */
-        .sudoku-cell, .schulte-cell, .matrix-cell, .chimp-cell {
-            background: rgba(255,255,255,0.05); border-radius: 8px;
-            display: flex; justify-content: center; align-items: center;
-            font-weight: bold; cursor: pointer; border: 1px solid var(--glass-border);
-            transition: all 0.1s;
-        }
-
-        /* Sudoku */
+        /* Common Cells */
+        .sudoku-cell, .schulte-cell, .matrix-cell, .chimp-cell { background: rgba(255,255,255,0.05); border-radius: 8px; display: flex; justify-content: center; align-items: center; font-weight: bold; cursor: pointer; border: 1px solid var(--glass-border); transition: all 0.1s; }
+        
         .sudoku-grid { grid-template-columns: repeat(9, 1fr); gap: 1px; background: #475569; border: 2px solid #475569; max-width: 400px; width: 100%; }
         .sudoku-cell { background: #1e293b; aspect-ratio: 1; font-size: 1.1rem; }
         .sudoku-cell.initial { color: var(--highlight); }
@@ -225,17 +252,12 @@
         .numpad { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 20px; max-width: 400px; width: 100%; }
         .numpad button { background: rgba(255,255,255,0.1); color: white; border: none; font-size: 1.1rem; padding: 10px; border-radius: 8px; cursor: pointer; }
 
-        /* Schulte */
         .schulte-cell { font-size: 1.5rem; aspect-ratio: 1; }
         .schulte-cell:active { background: var(--primary); transform: scale(0.95); }
-
-        /* Matrix */
         .matrix-cell { aspect-ratio: 1; }
         .matrix-cell.active { background: var(--accent); box-shadow: 0 0 15px var(--accent); }
         .matrix-cell.ok { background: var(--success); }
         .matrix-cell.fail { background: var(--danger); }
-
-        /* Chimp */
         .chimp-cell { font-size: 1.8rem; color: white; aspect-ratio: 1; }
         .chimp-cell.covered { color: transparent; background: white; border-color: white; }
         .chimp-cell.covered:active { background: #e2e8f0; }
@@ -243,37 +265,22 @@
 
         /* Sorter */
         .sorter-container { display: flex; flex-direction: column; align-items: center; gap: 30px; width: 100%; }
-        .sorter-card { 
-            width: 120px; height: 120px; background: #1e293b; border: 2px solid var(--accent);
-            border-radius: 16px; display: flex; justify-content: center; align-items: center;
-            font-size: 3rem; font-weight: bold; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .sorter-card { width: 120px; height: 120px; background: #1e293b; border: 2px solid var(--accent); border-radius: 16px; display: flex; justify-content: center; align-items: center; font-size: 3rem; font-weight: bold; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.3); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .sorter-controls { display: flex; gap: 40px; }
-        .sorter-btn { 
-            width: 100px; height: 100px; border-radius: 50%; border: none; font-weight: bold; font-size: 1rem; color: white;
-            cursor: pointer; transition: transform 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center;
-        }
+        .sorter-btn { width: 100px; height: 100px; border-radius: 50%; border: none; font-weight: bold; font-size: 1rem; color: white; cursor: pointer; transition: transform 0.1s; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .sorter-btn:active { transform: scale(0.9); }
         .btn-left { background: var(--secondary); box-shadow: 0 8px 0 #7e22ce; }
         .btn-right { background: var(--success); box-shadow: 0 8px 0 #047857; }
         .key-hint { font-size: 0.7rem; opacity: 0.7; margin-top: 5px; }
 
         /* Stopwatch */
-        .stopwatch-display { 
-            font-size: 5rem; font-family: 'Courier New', monospace; font-weight: bold; 
-            color: var(--accent); text-shadow: 0 0 20px rgba(56, 189, 248, 0.3); margin: 30px 0;
-        }
+        .stopwatch-display { font-size: 5rem; font-family: 'Courier New', monospace; font-weight: bold; color: var(--accent); text-shadow: 0 0 20px rgba(56, 189, 248, 0.3); margin: 30px 0; }
         .stopwatch-target { font-size: 1.5rem; color: var(--text-muted); margin-bottom: 20px; }
-        .stopwatch-btn { 
-            width: 140px; height: 140px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1);
-            background: var(--danger); color: white; font-size: 1.5rem; font-weight: bold; cursor: pointer;
-            box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); transition: all 0.2s;
-        }
+        .stopwatch-btn { width: 140px; height: 140px; border-radius: 50%; border: 4px solid rgba(255,255,255,0.1); background: var(--danger); color: white; font-size: 1.5rem; font-weight: bold; cursor: pointer; box-shadow: 0 0 30px rgba(244, 63, 94, 0.4); transition: all 0.2s; }
         .stopwatch-btn:active { transform: scale(0.95); background: #be123c; }
         .stopwatch-btn.running { background: #eab308; box-shadow: 0 0 30px rgba(234, 179, 8, 0.4); }
 
-        /* Word Search & Diff & Stroop */
+        /* Word Search & Stroop & Equation */
         .ws-grid { display: grid; gap: 2px; background: #334155; padding: 3px; border-radius: 8px; touch-action: none; }
         .ws-cell { background: #1e293b; width: 28px; height: 28px; display: flex; justify-content: center; align-items: center; font-weight: 600; cursor: pointer; font-size: 0.8rem; color: #cbd5e1; }
         .ws-cell.selected { background: var(--highlight); color: #0f172a; } .ws-cell.found { background: var(--success); color: #0f172a; }
@@ -286,25 +293,11 @@
 
         /* --- Modals --- */
         #confetti-canvas { position: fixed; top: 0; left: 0; pointer-events: none; z-index: 1000; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
-            display: none; justify-content: center; align-items: center; z-index: 2000;
-        }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); display: none; justify-content: center; align-items: center; z-index: 2000; }
         .modal-overlay.active { display: flex; }
-        .modal {
-            background: #1e293b; padding: 30px; border-radius: 20px;
-            max-width: 380px; width: 90%; text-align: center;
-            border: 1px solid var(--glass-border);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
+        .modal { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 380px; width: 90%; text-align: center; border: 1px solid var(--glass-border); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .modal h2 { color: var(--primary); margin-bottom: 10px; font-size: 1.8rem; }
-        .modal input {
-            width: 100%; padding: 12px; margin: 10px 0 20px 0;
-            border: 1px solid #334155; border-radius: 10px;
-            font-size: 1.1rem; background: #0f172a; color: white; text-align: center;
-        }
+        .modal input { width: 100%; padding: 12px; margin: 10px 0 20px 0; border: 1px solid #334155; border-radius: 10px; font-size: 1.1rem; background: #0f172a; color: white; text-align: center; }
         #ranking-list { max-height: 350px; overflow-y: auto; text-align: left; }
         #ranking-list li { padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 0.9rem; display: flex; justify-content: space-between; }
         #ranking-list b { color: var(--accent); }
@@ -330,7 +323,7 @@
     <div class="container">
         <header class="header">
             <h1>🧠 Brain Buddy</h1>
-            <p>12 Juegos Mentales</p>
+            <p>17 Juegos Mentales</p>
         </header>
 
         <div id="view-menu" class="view active">
@@ -344,7 +337,7 @@
             <div class="card">
                 <div class="game-header">
                     <div class="controls-left">
-                        <button class="btn btn-outline" onclick="App.confirmExit()">⬅ Menú</button>
+                        <button class="btn btn-outline" onclick="App.confirmExit()" onmousedown="App.confirmExit()">⬅ Menú</button>
                         <div class="difficulty-selector">
                             <select id="difficulty-select" onchange="App.changeDifficulty(this.value)">
                                 <option value="easy">Fácil</option>
@@ -357,12 +350,11 @@
                     <div class="controls-right">
                         <div class="stats-bar"><span id="stat-1">00:00</span></div>
                         <span id="stat-2" style="font-weight:bold; color:var(--highlight)"></span>
-                        <button class="btn btn-restart" onclick="App.restartGame()" title="Reiniciar Juego">↻ Reiniciar</button>
+                        <button class="btn btn-restart" onclick="App.restartGame()" title="Reiniciar Juego">↻</button>
                     </div>
                 </div>
                 
                 <div id="game-title-display" style="text-align: center; margin-bottom: 20px; color: var(--primary); font-size: 1.5rem; font-weight: 700; letter-spacing: 1px;"></div>
-                
                 <div id="game-board-area"></div>
             </div>
         </div>
@@ -377,7 +369,7 @@
                 <input type="text" id="player-name" placeholder="Tu nombre..." maxlength="12" autocomplete="off">
             </div>
             <div style="display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap;">
-                <button class="btn btn-primary" onclick="App.handleWinAction('replay')">↻ Jugar de nuevo</button>
+                <button class="btn btn-primary" onclick="App.handleWinAction('replay')">↻ Jugar</button>
                 <button class="btn btn-outline" onclick="App.handleWinAction('exit')">➜ Salir</button>
             </div>
         </div>
@@ -392,7 +384,7 @@
     </div>
 
 <script>
-/** BRAIN BUDDY CORE v11 */
+/** BRAIN BUDDY CORE v21 */
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => document.querySelectorAll(s);
 
@@ -410,18 +402,20 @@ const Sound = {
     win: () => { Sound.play(400,'sine',0.1); setTimeout(()=>Sound.play(600,'sine',0.1),100); setTimeout(()=>Sound.play(800,'triangle',0.4,0.2),200); },
     click: () => Sound.play(300,'sine',0.05,0.05),
     error: () => Sound.play(150,'sawtooth',0.3,0.08),
-    merge: () => Sound.play(500,'square',0.05,0.05)
+    merge: () => Sound.play(500,'square',0.05,0.05),
+    brick: () => Sound.play(600, 'square', 0.05, 0.1),
+    paddle: () => Sound.play(200, 'triangle', 0.1, 0.1)
 };
 
 const Storage = {
-    get: () => JSON.parse(localStorage.getItem('brainBuddy_v11')) || {},
-    save: (d) => localStorage.setItem('brainBuddy_v11', JSON.stringify(d)),
+    get: () => JSON.parse(localStorage.getItem('brainBuddy_v21')) || {},
+    save: (d) => localStorage.setItem('brainBuddy_v21', JSON.stringify(d)),
     check: (id, diff, score, mode) => {
         const d = Storage.get();
         const cur = d[`${id}_${diff}`];
         if(!cur) return true;
         if (mode === 'score') return score > cur.score;
-        return score < cur.score; // time
+        return score < cur.score; 
     },
     set: (id, diff, name, score) => {
         const d = Storage.get();
@@ -450,304 +444,359 @@ const Confetti = {
     }
 };
 
-/* --- NEW GAMES --- */
+/* --- FIXED PUZZLE LOGIC (CANVAS GEN) --- */
+const PuzzleThemes = {
+    easy: { t: 'Manzana', e: '🍎', c: '#fecaca' },
+    medium: { t: 'Emoji', e: '😎', c: '#fde047' },
+    hard: { t: 'Alien', e: '👽', c: '#a78bfa' },
+    extreme: { t: 'Diablo', e: '👿', c: '#f87171' }
+};
 
-// 10. Chimp Test
-class ChimpGame {
+class SlidingGame {
     constructor(diff) {
-        this.diff = diff;
-        this.level = 4; // Start numbers
-        this.maxLevel = diff==='easy'?8:(diff==='medium'?12:(diff==='hard'?18:36));
-        this.lives = 3;
-        this.nums = [];
-        this.current = 1;
-        this.isCovered = false;
+        this.diff = diff; 
+        this.sz = diff==='easy'?3:(diff==='medium'?4:5);
+        this.theme = PuzzleThemes[diff] || PuzzleThemes.easy;
+        this.board = []; 
+        this.emptyIdx = -1;
+        this.moves = 0;
+        this.imgData = null;
     }
-    init(c) { this.cont = c; this.load(); }
-    load() {
-        this.nums = [];
-        this.current = 1;
-        this.isCovered = false;
-        $('#stat-2').textContent = `Nivel: ${this.level} | ❤️ ${this.lives}`;
+    init(c) {
+        this.c = c;
+        this.imgData = this.generateImage();
+        this.board = Array.from({length: this.sz*this.sz}, (_, i) => i);
+        this.board[this.sz*this.sz - 1] = -1; 
+        this.emptyIdx = this.sz*this.sz - 1;
         
-        // Grid size depends on level
-        const sz = this.level <= 9 ? 5 : 6;
-        const positions = [];
-        while(positions.length < this.level) {
-            const p = Math.floor(Math.random() * (sz*sz));
-            if(!positions.includes(p)) positions.push(p);
+        let shuffles = this.sz === 3 ? 50 : 150;
+        let lastMove = -1;
+        for(let i=0; i<shuffles; i++) {
+            const neighbors = this.getNeighbors(this.emptyIdx);
+            const valid = neighbors.filter(n => n !== lastMove);
+            if(valid.length > 0) {
+                const move = valid[Math.floor(Math.random() * valid.length)];
+                [this.board[this.emptyIdx], this.board[move]] = [this.board[move], this.board[this.emptyIdx]];
+                lastMove = this.emptyIdx;
+                this.emptyIdx = move;
+            }
         }
-        
-        this.cont.innerHTML = `
-            <div class="chimp-grid" style="grid-template-columns:repeat(${sz},1fr); width:${sz*60}px;">
-                ${Array(sz*sz).fill(0).map((_,i) => {
-                    const idx = positions.indexOf(i);
-                    return idx !== -1 
-                        ? `<div class="chimp-cell" id="ch-${i}" onclick="App.curr.click(${i}, ${idx+1})">${idx+1}</div>` 
-                        : `<div class="chimp-cell hidden"></div>`
+        this.moves = 0;
+        this.render();
+    }
+    generateImage() {
+        const cvs = document.createElement('canvas');
+        const s = 400; // Resolution
+        cvs.width = s; cvs.height = s;
+        const ctx = cvs.getContext('2d');
+        ctx.fillStyle = this.theme.c;
+        ctx.fillRect(0,0,s,s);
+        ctx.font = `${s*0.6}px serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(this.theme.e, s/2, s/2);
+        return cvs.toDataURL();
+    }
+    getNeighbors(idx) {
+        const r = Math.floor(idx / this.sz);
+        const c = idx % this.sz;
+        const n = [];
+        if(r > 0) n.push(idx - this.sz); 
+        if(r < this.sz - 1) n.push(idx + this.sz); 
+        if(c > 0) n.push(idx - 1); 
+        if(c < this.sz - 1) n.push(idx + 1); 
+        return n;
+    }
+    render() {
+        $('#stat-2').textContent = `Mov: ${this.moves}`;
+        const bgSize = this.sz * 100;
+        this.c.innerHTML = `
+            <div class="slide-grid" style="grid-template-columns:repeat(${this.sz},1fr); width:${this.sz*70}px;">
+                ${this.board.map((val, i) => {
+                    let style = '';
+                    if(val !== -1) {
+                        const r = Math.floor(val / this.sz);
+                        const c = val % this.sz;
+                        const x = (c / (this.sz - 1)) * 100;
+                        const y = (r / (this.sz - 1)) * 100;
+                        style = `background-image: url('${this.imgData}'); background-size: ${bgSize}%; background-position: ${x}% ${y}%`;
+                    }
+                    return `<div class="slide-tile ${val===-1?'empty':''}" style="${style}" onclick="App.curr.click(${i})"></div>`;
                 }).join('')}
             </div>
-            <div style="margin-top:20px; text-align:center; color:var(--text-muted)">Memoriza y pulsa en orden</div>
+            <div style="text-align:center; margin-top:15px; font-size:0.9rem; color:var(--text-muted)">Reconstruye: ${this.theme.t}</div>
         `;
     }
-    click(id, num) {
-        if(num !== this.current) {
+    click(idx) {
+        const neighbors = this.getNeighbors(this.emptyIdx);
+        if(neighbors.includes(idx)) {
+            [this.board[this.emptyIdx], this.board[idx]] = [this.board[idx], this.board[this.emptyIdx]];
+            this.emptyIdx = idx;
+            this.moves++;
+            Sound.click();
+            this.render();
+            this.checkWin();
+        } else {
+            Sound.error();
+        }
+    }
+    checkWin() {
+        for(let i=0; i<this.board.length-1; i++) if(this.board[i] !== i) return;
+        App.endGame(true);
+    }
+}
+
+// 17. Arkanoid (INFINITE PROGRESSIVE)
+class ArkanoidGame {
+    constructor() {
+        this.score = 0; 
+        this.level = 1;
+        this.lives = 3; 
+        this.active = false;
+        // Config
+        this.speedBase = 3.5; // Start comfortable
+        this.paddleW = 80;
+    }
+    init(c) {
+        // Bigger canvas: 360x500 to fit most mobile screens nice and tall
+        c.innerHTML = `<canvas id="arkanoid-canvas" width="360" height="500"></canvas><div style="margin-top:10px;color:#aaa;font-size:0.9rem">Desliza para mover</div>`;
+        this.cvs = document.getElementById('arkanoid-canvas');
+        this.ctx = this.cvs.getContext('2d');
+        this.resetBall();
+        this.genBricks();
+        this.active = true;
+        
+        // Controls
+        const move = (e) => {
+            const rect = this.cvs.getBoundingClientRect();
+            // Scaling factor for canvas display size vs internal size
+            const scaleX = this.cvs.width / rect.width;
+            
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            let x = (clientX - rect.left) * scaleX;
+            this.paddle.x = Math.max(0, Math.min(this.cvs.width - this.paddle.w, x - this.paddle.w/2));
+        };
+        this.cvs.addEventListener('mousemove', move);
+        this.cvs.addEventListener('touchmove', (e)=>{e.preventDefault(); move(e);}, {passive:false});
+        
+        this.loop();
+    }
+    resetBall() {
+        this.paddle = { x: 140, y: 460, w: this.paddleW, h: 10 };
+        // Increase speed slightly with levels, maxing out eventually
+        const lvlSpeed = this.speedBase + (this.level * 0.3); 
+        this.ball = { x: 180, y: 440, r: 6, dx: lvlSpeed * (Math.random()>.5?1:-1), dy: -lvlSpeed };
+    }
+    nextLevel() {
+        this.level++;
+        Sound.merge(); // Level up sound
+        this.resetBall();
+        this.genBricks();
+    }
+    genBricks() {
+        this.bricks = [];
+        const rows = Math.min(8, 3 + Math.floor(this.level / 2)); // More rows as you progress
+        const cols = 6;
+        const pad = 8;
+        const w = (this.cvs.width - (pad * (cols+1))) / cols;
+        const h = 20;
+        const offY = 40;
+        
+        // Color per row
+        const colors = ['#f87171', '#fbbf24', '#34d399', '#60a5fa', '#a78bfa'];
+        
+        for(let c=0; c<cols; c++) {
+            for(let r=0; r<rows; r++) {
+                this.bricks.push({
+                    x: pad + c*(w+pad), 
+                    y: offY + r*(h+pad), 
+                    w:w, h:h, s:1, 
+                    c: colors[r % colors.length]
+                });
+            }
+        }
+    }
+    stop() { this.active = false; }
+    loop() {
+        if(!this.active) return;
+        
+        // Update
+        this.ball.x += this.ball.dx;
+        this.ball.y += this.ball.dy;
+        
+        // Walls
+        if(this.ball.x + this.ball.r > this.cvs.width || this.ball.x - this.ball.r < 0) this.ball.dx *= -1;
+        if(this.ball.y - this.ball.r < 0) this.ball.dy *= -1;
+        
+        // Paddle
+        if(this.ball.y + this.ball.r > this.paddle.y && 
+           this.ball.x > this.paddle.x && this.ball.x < this.paddle.x + this.paddle.w) {
+            this.ball.dy = -Math.abs(this.ball.dy); // Always go up
+            // Curve logic
+            let hit = (this.ball.x - (this.paddle.x + this.paddle.w/2)) / (this.paddle.w/2);
+            let speed = Math.sqrt(this.ball.dx*this.ball.dx + this.ball.dy*this.ball.dy);
+            this.ball.dx = hit * speed * 0.8; 
+            Sound.paddle();
+        }
+        
+        // Bricks
+        for(let b of this.bricks) {
+            if(b.s && this.ball.x > b.x && this.ball.x < b.x+b.w && this.ball.y > b.y && this.ball.y < b.y+b.h) {
+                this.ball.dy *= -1;
+                b.s = 0;
+                this.score += 10;
+                Sound.brick();
+            }
+        }
+        
+        // Level Clear
+        if(this.bricks.every(b=>!b.s)) {
+            this.nextLevel();
+            return; // Loop will restart on next frame
+        }
+
+        // Death
+        if(this.ball.y > this.cvs.height) {
             this.lives--;
             Sound.error();
-            if(this.lives <= 0) App.endGame(true);
-            else { 
-                $('#stat-2').textContent = `Nivel: ${this.level} | ❤️ ${this.lives}`;
-                alert("¡Fallo! Reintentando nivel...");
-                this.load(); 
-            }
-            return;
-        }
-
-        Sound.click();
-        
-        // Logic: If click '1', hide others
-        if(this.current === 1) {
-            this.isCovered = true;
-            $$('.chimp-cell').forEach(el => {
-                if(!el.classList.contains('hidden') && el.textContent !== '1') {
-                    el.classList.add('covered');
-                }
-            });
-        }
-        
-        // Hide clicked
-        $(`#ch-${id}`).classList.add('hidden');
-        this.current++;
-        
-        if(this.current > this.level) {
-            Sound.merge();
-            this.level++;
-            setTimeout(()=>this.load(), 500);
-        }
-    }
-    get score() { return this.level; }
-}
-
-// 11. Speed Sorter
-class SorterGame {
-    constructor(diff) {
-        this.diff = diff;
-        this.score = 0;
-        this.mode = (diff==='easy'||diff==='medium') ? 'nums' : 'chars';
-        this.currentVal = null;
-        this.currentType = null; // 0: Left, 1: Right
-    }
-    init(c) {
-        this.cont = c;
-        // Keyboard support
-        document.onkeydown = (e) => {
-            if(e.key === 'ArrowLeft') this.check(0);
-            if(e.key === 'ArrowRight') this.check(1);
-        };
-        this.next();
-    }
-    next() {
-        $('#stat-2').textContent = `Pts: ${this.score}`;
-        let txt = '', type = 0; // 0 left, 1 right
-        
-        if(this.mode === 'nums') {
-            const n = Math.floor(Math.random() * 100);
-            txt = n;
-            type = (n % 2 === 0) ? 0 : 1; // 0: Par, 1: Impar
-        } else {
-            const vowels = "AEIOU";
-            const cons = "BCDFGHJKLMNPQRSTVWXYZ";
-            if(Math.random() > 0.5) {
-                txt = vowels[Math.floor(Math.random()*vowels.length)];
-                type = 0; // Vocal
+            if(this.lives > 0) {
+                this.resetBall();
             } else {
-                txt = cons[Math.floor(Math.random()*cons.length)];
-                type = 1; // Consonante
+                this.active = false;
+                App.endGame(true); // End game, save score
+                return;
             }
         }
         
-        const labelL = this.mode === 'nums' ? 'PAR' : 'VOCAL';
-        const labelR = this.mode === 'nums' ? 'IMPAR' : 'CONST';
+        // Draw
+        this.ctx.clearRect(0, 0, this.cvs.width, this.cvs.height);
         
-        this.currentType = type;
-        this.cont.innerHTML = `
-            <div class="sorter-container">
-                <div class="sorter-card">${txt}</div>
-                <div class="sorter-controls">
-                    <button class="sorter-btn btn-left" onclick="App.curr.check(0)">
-                        ${labelL} <span class="key-hint">⬅</span>
-                    </button>
-                    <button class="sorter-btn btn-right" onclick="App.curr.check(1)">
-                        ${labelR} <span class="key-hint">➡</span>
-                    </button>
-                </div>
-            </div>
-        `;
-    }
-    check(side) {
-        if(side === this.currentType) {
-            this.score += 5;
-            Sound.click();
-        } else {
-            this.score = Math.max(0, this.score - 5);
-            Sound.error();
-            App.visualPenalty();
-        }
-        this.next();
-    }
-}
-
-// 12. Mental Stopwatch
-class StopwatchGame {
-    constructor(diff) {
-        this.diff = diff;
-        // Targets: Easy 10, Med 5, Hard 10, Ext 15
-        this.targetTime = (diff==='medium'||diff==='extreme'&&false) ? 5 : 10; 
-        if(diff==='extreme') this.targetTime = 15;
+        // Paddle
+        this.ctx.fillStyle = '#6366f1';
+        this.ctx.shadowBlur = 10; this.ctx.shadowColor = '#6366f1';
+        this.ctx.fillRect(this.paddle.x, this.paddle.y, this.paddle.w, this.paddle.h);
+        this.ctx.shadowBlur = 0;
         
-        // Visibility limit: Hard=4, Ext=5, others=Infinite
-        this.visLimit = (diff==='hard') ? 4 : ((diff==='extreme') ? 5 : 999);
+        // Ball
+        this.ctx.beginPath();
+        this.ctx.arc(this.ball.x, this.ball.y, this.ball.r, 0, Math.PI*2);
+        this.ctx.fillStyle = '#38bdf8';
+        this.ctx.fill();
+        this.ctx.closePath();
         
-        this.startTime = 0;
-        this.running = false;
-        this.score = 0;
-        this.attempts = 3;
-        this.interval = null;
-    }
-    init(c) {
-        this.cont = c;
-        this.renderState();
-    }
-    renderState() {
-        $('#stat-2').textContent = `Pts: ${this.score.toFixed(0)} | Turnos: ${this.attempts}`;
-        this.cont.innerHTML = `
-            <div style="text-align:center">
-                <div class="stopwatch-target">META: ${this.targetTime}.00 seg</div>
-                <div class="stopwatch-display">0.00</div>
-                <button class="stopwatch-btn ${this.running?'running':''}" onclick="App.curr.toggle()">
-                    ${this.running ? 'STOP' : 'START'}
-                </button>
-                <div style="margin-top:20px; color:var(--text-muted); font-size:0.9rem">
-                    ${this.diff==='hard'||this.diff==='extreme' ? `(Se oculta a los ${this.visLimit}s)` : '(Visible siempre)'}
-                </div>
-            </div>
-        `;
-    }
-    toggle() {
-        if(!this.running) {
-            if(this.attempts <= 0) return;
-            this.running = true;
-            this.startTime = Date.now();
-            Sound.click();
-            this.renderState();
-            this.loop();
-        } else {
-            this.stop();
-        }
-    }
-    loop() {
-        if(!this.running) return;
-        const diff = (Date.now() - this.startTime) / 1000;
-        const disp = $('.stopwatch-display');
+        // Bricks
+        this.bricks.forEach(b => {
+            if(b.s) {
+                this.ctx.fillStyle = b.c || '#a855f7';
+                this.ctx.fillRect(b.x, b.y, b.w, b.h);
+            }
+        });
         
-        if(diff > this.visLimit) {
-            disp.textContent = "?.??";
-            disp.style.color = "#555";
-        } else {
-            disp.textContent = diff.toFixed(2);
-            disp.style.color = "var(--accent)";
-        }
+        // Stats Overlay
+        $('#stat-2').textContent = `Nivel ${this.level} | ❤️${this.lives} | Pts: ${this.score}`;
         
         requestAnimationFrame(()=>this.loop());
     }
-    stop() {
-        this.running = false;
-        const actual = (Date.now() - this.startTime) / 1000;
-        const delta = Math.abs(actual - this.targetTime);
-        $('.stopwatch-display').textContent = actual.toFixed(3);
-        
-        // Score: Max 100 per round. 
-        // 0.00 diff = 100pts. 1.00 diff = 0pts.
-        let pts = Math.max(0, 100 - (delta * 100));
-        this.score += pts;
-        this.attempts--;
-        
-        Sound.win(); // Ding sound for stop
-        
-        setTimeout(() => {
-            if(this.attempts <= 0) App.endGame(true);
-            else this.renderState();
-        }, 2000);
+}
+
+// 14. Emoji Equation
+class EquationGame {
+    constructor(diff) {
+        this.diff = diff; this.score = 0; this.streak = 0;
+        this.emojis = ['🍎','🍌','🍕','🍔','🎈','⭐','🌵','🍄','🐙','🐱'];
+    }
+    init(c) { this.c = c; this.next(); }
+    next() {
+        $('#stat-2').textContent = `Pts: ${this.score}`;
+        const icons = [...this.emojis].sort(()=>0.5-Math.random()).slice(0,2);
+        const [A, B] = icons;
+        const valA = Math.floor(Math.random()*8)+2; 
+        const valB = Math.floor(Math.random()*8)+1;
+        const line1_res = valA * 2;
+        const line2_res = valA + valB;
+        let questionHTML = `${B} + ${B}`;
+        let finalAns = valB + valB;
+        if(this.diff === 'hard' || this.diff === 'extreme') {
+             if(Math.random() > 0.5) { questionHTML = `${B} + ${A}`; finalAns = valB + valA; }
+        }
+        const options = [finalAns];
+        while(options.length < 4) {
+            let fake = finalAns + Math.floor(Math.random()*10)-5;
+            if(!options.includes(fake) && fake !== finalAns && fake >= 0) options.push(fake);
+        }
+        this.c.innerHTML = `<div class="eq-container"><div class="eq-row"><div class="eq-item">${A} + ${A}</div><div>= ${line1_res}</div></div><div class="eq-row"><div class="eq-item">${A} + ${B}</div><div>= ${line2_res}</div></div><div class="eq-row" style="border:2px solid var(--accent); background:rgba(99, 102, 241, 0.1);"><div class="eq-item">${questionHTML}</div><div>= <span style="color:var(--highlight)">?</span></div></div><div class="choice-grid">${options.sort(()=>0.5-Math.random()).map(o => `<button class="choice-btn" onclick="App.curr.check(${o}, ${finalAns})">${o}</button>`).join('')}</div></div>`;
+    }
+    check(val, correct) {
+        if(val === correct) {
+            this.score += 10; this.streak++; Sound.click();
+            if(this.streak % 3 === 0) App.addTime(3, true);
+            this.next();
+        } else {
+            this.score = Math.max(0, this.score - 5); this.streak = 0; Sound.error(); App.visualPenalty(); this.next();
+        }
     }
 }
 
-/* --- EXISTING GAMES (Brief versions) --- */
-class MemoryGame {
-    constructor(diff){this.diff=diff;this.cards=[];this.flipped=[];this.locked=false;this.matched=0;this.streak=0;
-    this.cols=diff==='easy'?4:(diff==='medium'?5:6);this.rows=diff==='easy'?4:(diff==='medium'?4:6);
-    const t=['🍎','🍌','🍒','🍇','🍉','🍋','🥝','🥥','🥑','🍆','🥕','🌽','🥦','🌶️','🍄','🥜','🍞','🧀','🍖','🍗'];
-    let p=[];while(p.length<(this.cols*this.rows)/2)p.push(t[Math.floor(Math.random()*t.length)]);
-    this.cards=[...p,...p].sort(()=>0.5-Math.random());}
-    init(c){c.innerHTML=`<div class="memory-grid" style="grid-template-columns:repeat(${this.cols},1fr)">${this.cards.map((e,i)=>`<div class="memory-card" id="c-${i}" onclick="App.curr.flip(${i})"><div class="front">${e}</div><div class="back"></div></div>`).join('')}</div>`;}
-    flip(i){let c=$(`#c-${i}`);if(this.locked||c.classList.contains('flip'))return;c.classList.add('flip');Sound.click();this.flipped.push({id:i,v:this.cards[i],e:c});
-    if(this.flipped.length===2){this.locked=true;App.moves++;if(this.flipped[0].v===this.flipped[1].v){this.matched++;this.streak++;if(this.streak>=2){App.addTime(5,false);this.streak=0;}this.flipped=[];this.locked=false;if(this.matched===this.cards.length/2)App.endGame(true);}else{this.streak=0;Sound.error();setTimeout(()=>{this.flipped.forEach(x=>x.e.classList.remove('flip'));this.flipped=[];this.locked=false;},800);}}}
+// 15. Emoji Hunt
+class HuntGame {
+    constructor(diff) {
+        this.diff = diff; this.score = 0; 
+        this.sz = diff==='easy'?5:(diff==='medium'?6:8);
+        this.targetCount = 3; this.found = 0;
+        this.pool = ['😀','😂','😍','😎','🤬','🤢','🤡','👻','👽','🤖','💩','👺','💀','🤕','🤠','🥸','😇','🎃','🍎','🍌','🍒','🍕','🚗','🚀','⚽'];
+    }
+    init(c) { this.c = c; this.load(); }
+    load() {
+        this.found = 0;
+        const target = this.pool[Math.floor(Math.random()*this.pool.length)];
+        let distractors = this.pool.filter(x => x !== target);
+        const totalCells = this.sz * this.sz;
+        const grid = [];
+        for(let i=0; i<this.targetCount; i++) grid.push({v:target, t:true});
+        while(grid.length < totalCells) grid.push({v: distractors[Math.floor(Math.random()*distractors.length)], t:false});
+        grid.sort(()=>0.5-Math.random());
+        $('#stat-2').textContent = `Pts: ${this.score}`;
+        this.c.innerHTML = `<div style="text-align:center; margin-bottom:10px; font-size:1.1rem">Busca: <span style="font-size:1.5rem; border:1px solid #555; padding:0 5px; border-radius:5px">${target}</span> (<span id="hunt-count">0</span>/${this.targetCount})</div><div class="hunt-grid" style="grid-template-columns:repeat(${this.sz},1fr); width:${Math.min(380, this.sz*45)}px;">${grid.map((item, i) => `<div class="hunt-cell" onclick="App.curr.click(this, ${item.t})">${item.v}</div>`).join('')}</div>`;
+    }
+    click(el, isTarget) {
+        if(el.classList.contains('found')) return;
+        if(isTarget) {
+            el.classList.add('found'); this.found++; $('#hunt-count').textContent = this.found; Sound.click();
+            if(this.found === this.targetCount) { this.score += 20; Sound.merge(); App.addTime(3, true); setTimeout(() => this.load(), 500); }
+        } else { this.score = Math.max(0, this.score - 5); Sound.error(); App.visualPenalty(); }
+    }
 }
-class MathGame {
-    constructor(diff){this.diff=diff;this.score=0;this.combo=0;this.bonus=diff==='easy'?2:(diff==='medium'?3:5);}
-    init(c){c.innerHTML=`<div style="text-align:center"><div class="stroop-word" style="font-size:2.5rem" id="mp"></div><div class="choice-grid" id="mo"></div></div>`;this.next();}
-    next(){let o=['+','-','*'],op=o[Math.floor(Math.random()*(this.diff==='easy'?2:3))],a,b,r;
-    if(op==='*'){a=Math.floor(Math.random()*9)+2;b=Math.floor(Math.random()*9)+2;r=a*b;}else{a=Math.floor(Math.random()*20)+1;b=Math.floor(Math.random()*20)+1;r=op==='+'?a+b:a-b;}
-    $('#mp').textContent=`${a} ${op} ${b}`;$('#stat-2').textContent=`Pts: ${this.score}`;
-    let ch=[r];while(ch.length<4){let x=r+Math.floor(Math.random()*10)-5;if(!ch.includes(x))ch.push(x);}
-    $('#mo').innerHTML=ch.sort(()=>0.5-Math.random()).map(x=>`<button class="choice-btn" onclick="App.curr.chk(${x},${r})">${x}</button>`).join('');}
-    chk(v,r){if(v===r){this.score+=10;this.combo++;Sound.click();if(this.combo%3===0)App.addTime(this.bonus,true);this.next();}else{this.score=Math.max(0,this.score-5);this.combo=0;Sound.error();App.visualPenalty();this.next();}}
-}
-class AnagramGame { constructor(d){this.d=d;this.sc=0;this.cm=0;this.w=['GATO','SOL','LUZ','MAR','PAN','VINO','CASA','ARBOL','TREN'];this.t=[];this.pool=[];this.s=[];}
-    init(c){this.c=c;this.load();document.onkeydown=(e)=>{if(e.key.match(/[a-zñ]/i)){let f=this.pool.find(x=>x.l===e.key.toUpperCase());if(f)this.cp(f.id);}if(e.key==='Backspace'){let i=this.s.map((x,k)=>x?k:-1).filter(x=>x!==-1).pop();if(i!==undefined)this.cs(i);}};}
-    load(){if(!this.t.length)this.t=[...this.w].sort(()=>0.5-Math.random());this.cw=this.t.pop();this.pool=this.cw.split('').sort(()=>0.5-Math.random()).map((l,i)=>({l,id:i}));this.s=Array(this.cw.length).fill(null);this.render();}
-    render(){$('#stat-2').textContent=`Pts: ${this.sc}`;this.c.innerHTML=`<div class="anagram-slots">${this.s.map((x,i)=>x?`<div class="letter-btn" onclick="App.curr.cs(${i})">${x.l}</div>`:`<div class="letter-btn empty"></div>`).join('')}</div><div class="anagram-pool">${this.pool.map(x=>`<div class="letter-btn" onclick="App.curr.cp(${x.id})">${x.l}</div>`).join('')}</div>`;}
-    cp(id){let pi=this.pool.findIndex(x=>x.id===id),si=this.s.findIndex(x=>x===null);if(pi>-1&&si>-1){this.s[si]=this.pool[pi];this.pool.splice(pi,1);Sound.click();this.render();this.chk();}}
-    cs(i){if(this.s[i]){this.pool.push(this.s[i]);this.s[i]=null;Sound.click();this.render();}}
-    chk(){if(!this.s.includes(null)){if(this.s.map(x=>x.l).join('')===this.cw){Sound.merge();this.sc+=10;this.cm++;if(this.cm%3===0)App.addTime(3,true);setTimeout(()=>this.load(),300);}else{Sound.error();this.sc=Math.max(0,this.sc-5);this.cm=0;App.visualPenalty();this.pool=this.cw.split('').sort(()=>0.5-Math.random()).map((l,i)=>({l,id:i}));this.s=Array(this.cw.length).fill(null);setTimeout(()=>this.render(),300);}}}
-}
-class MatrixGame { constructor(d){this.rd=1;this.mx=5;this.cfg=d==='easy'?[3,3]:(d==='medium'?[4,5]:[5,7]);this.sz=this.cfg[0];this.tc=this.cfg[1];this.tg=[];this.sl=[];this.ok=false;}
-    init(c){this.c=c;this.ld();}
-    ld(){if(this.rd>this.mx){App.endGame(true);return;}$('#stat-2').textContent=`Ronda ${this.rd}/${this.mx}`;this.c.innerHTML=`<div class="matrix-grid" style="grid-template-columns:repeat(${this.sz},1fr);width:${this.sz*60}px">${Array(this.sz*this.sz).fill(0).map((_,i)=>`<div class="matrix-cell" id="mt-${i}" onclick="App.curr.ck(${i})"></div>`).join('')}</div>`;this.tg=[];while(this.tg.length<this.tc){let r=Math.floor(Math.random()*this.sz*this.sz);if(!this.tg.includes(r))this.tg.push(r);}setTimeout(()=>{this.tg.forEach(x=>$(`#mt-${x}`).classList.add('active'));Sound.click();},500);setTimeout(()=>{this.tg.forEach(x=>$(`#mt-${x}`).classList.remove('active'));this.ok=true;this.sl=[];},2000);}
-    ck(i){if(!this.ok)return;if(this.sl.includes(i))return;if(this.tg.includes(i)){$(`#mt-${i}`).classList.add('ok');this.sl.push(i);Sound.click();if(this.sl.length===this.tc){this.ok=false;Sound.merge();setTimeout(()=>{this.rd++;this.ld();},800);}}else{$(`#mt-${i}`).classList.add('fail');Sound.error();this.ok=false;this.tg.forEach(x=>$(`#mt-${x}`).classList.add('active'));setTimeout(()=>this.ld(),1500);}}
-}
-class SchulteGame { constructor(d){this.sz=d==='easy'?3:(d==='medium'?4:5);this.mx=this.sz*this.sz;this.cur=1;this.n=[];}
-    init(c){this.n=Array.from({length:this.mx},(_,i)=>i+1).sort(()=>0.5-Math.random());$('#stat-2').textContent=`Busca: 1`;c.innerHTML=`<div class="schulte-grid" style="grid-template-columns:repeat(${this.sz},1fr);width:${this.sz*55}px">${this.n.map(x=>`<div class="schulte-cell" onclick="App.curr.ck(this,${x})">${x}</div>`).join('')}</div>`;}
-    ck(e,v){if(v===this.cur){Sound.click();e.style.opacity='0.3';e.style.pointerEvents='none';this.cur++;if(this.cur>this.mx)App.endGame(true);else $('#stat-2').textContent=`Busca: ${this.cur}`;}else Sound.error();}
-}
-class Sudoku { constructor(d){this.d=d;this.b=[];this.s=[];}
-    init(c){c.innerHTML=`<div class="sudoku-grid" id="sb"></div><div class="numpad" id="sp"></div>`;this.gen();let b=$('#sb');this.b.forEach((r,i)=>r.forEach((v,j)=>{let d=document.createElement('div');d.className=`sudoku-cell ${v?'initial':''}`;d.textContent=v||'';d.onclick=()=>{if(!v)this.sel(d,i,j)};b.appendChild(d);}));[1,2,3,4,5,6,7,8,9,'⌫'].forEach(x=>{let bt=document.createElement('button');bt.textContent=x;bt.onclick=()=>this.inp(x);$('#sp').appendChild(bt);});}
-    sel(e,r,c){$$('.selected').forEach(x=>x.classList.remove('selected'));this.cur={e,r,c};e.classList.add('selected');}
-    inp(v){if(!this.cur)return;let val=v==='⌫'?0:v;this.cur.e.textContent=val||'';this.b[this.cur.r][this.cur.c]=val;if(val&&val!=this.s[this.cur.r][this.cur.c]){this.cur.e.classList.add('error');Sound.error();}else{this.cur.e.classList.remove('error');Sound.click();if(this.b.every((r,i)=>r.every((c,j)=>c===this.s[i][j])))App.endGame(true);}}
-    gen(){this.s=Array(9).fill().map(()=>Array(9).fill(0));const f=(r,c)=>{let n=[1,2,3,4,5,6,7,8,9].sort(()=>0.5-Math.random());for(let x of n)if(this.v(r,c,x)){this.s[r][c]=x;if(c===8?(r===8?1:f(r+1,0)):f(r,c+1))return 1;this.s[r][c]=0;}return 0;};f(0,0);this.b=JSON.parse(JSON.stringify(this.s));let k=this.d==='easy'?30:45;while(k>0){let r=Math.floor(Math.random()*9),c=Math.floor(Math.random()*9);if(this.b[r][c]){this.b[r][c]=0;k--;}}}
-    v(r,c,x){for(let k=0;k<9;k++)if(this.s[r][k]===x||this.s[k][c]===x)return 0;let br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=0;i<3;i++)for(let j=0;j<3;j++)if(this.s[br+i][bc+j]===x)return 0;return 1;}
-}
-class WordSearch { constructor(d){this.sz=10;this.w=['JAVA','CODE','BYTE','WEB','APP'];this.bd=[];this.fd=0;}
-    init(c){c.innerHTML=`<div style="text-align:center;margin-bottom:10px">Encuentra: ${this.w.join(', ')}</div><div class="ws-grid" style="grid-template-columns:repeat(${this.sz},1fr);width:${this.sz*28}px" id="wb"></div>`;this.gen();let b=$('#wb');this.bd.forEach((r,i)=>r.forEach((l,j)=>{let d=document.createElement('div');d.className='ws-cell';d.textContent=l;d.dataset.r=i;d.dataset.c=j;b.appendChild(d);}));this.evt(b);}
-    gen(){this.bd=Array(this.sz).fill().map(()=>Array(this.sz).fill(''));this.w.forEach(w=>{let p=0;while(!p){let d=Math.floor(Math.random()*2),r=Math.floor(Math.random()*this.sz),c=Math.floor(Math.random()*this.sz);if(this.ck(w,r,c,d)){for(let i=0;i<w.length;i++)this.bd[r+(d?i:0)][c+(d?0:i)]=w[i];p=1;}}});const a="ABCDEFGHIJKLMNOPQRSTUVWXYZ";for(let i=0;i<this.sz;i++)for(let j=0;j<this.sz;j++)if(!this.bd[i][j])this.bd[i][j]=a[Math.floor(Math.random()*a.length)];}
-    ck(w,r,c,d){if((d&&r+w.length>this.sz)||(!d&&c+w.length>this.sz))return 0;for(let i=0;i<w.length;i++)if(this.bd[r+(d?i:0)][c+(d?0:i)])return 0;return 1;}
-    evt(b){let s=0,st,pth=[];const g=e=>e.target.closest('.ws-cell');
-    b.onmousedown=e=>{let c=g(e);if(c){s=1;st={r:+c.dataset.r,c:+c.dataset.c};}};
-    b.onmousemove=e=>{if(s){let c=g(e);if(c){$$('.selected').forEach(x=>x.classList.remove('selected'));let en={r:+c.dataset.r,c:+c.dataset.c},dr=en.r-st.r,dc=en.c-st.c;pth=[];if(!dr||!dc||Math.abs(dr)===Math.abs(dc)){let mx=Math.max(Math.abs(dr),Math.abs(dc)),ir=dr?dr/Math.abs(dr):0,ic=dc?dc/Math.abs(dc):0;for(let i=0;i<=mx;i++)pth.push({r:st.r+i*ir,c:st.c+i*ic});pth.forEach(p=>$(`.ws-cell[data-r="${p.r}"][data-c="${p.c}"]`)?.classList.add('selected'));}}}};
-    document.onmouseup=()=>{if(s){s=0;let t=pth.map(p=>this.bd[p.r][p.c]).join('');if(this.w.includes(t)){this.fd++;pth.forEach(p=>$(`.ws-cell[data-r="${p.r}"][data-c="${p.c}"]`).classList.add('found'));Sound.click();if(this.fd===this.w.length)App.endGame(true);}$$('.selected').forEach(x=>x.classList.remove('selected'));}};}
-}
-class DiffGame { constructor(d){this.l=1;this.m=d==='easy'?3:5;}init(c){this.c=c;this.ld();}ld(){let s=Math.min(this.l+2,6),e=['😀','😎','👽','🤖'],b=e[Math.floor(Math.random()*4)],d;do{d=e[Math.floor(Math.random()*4)]}while(d===b);let t=Math.floor(Math.random()*s*s);this.c.innerHTML=`<div style="text-align:center;margin-bottom:10px">Nivel ${this.l}/${this.m}</div><div class="diff-grid" style="display:grid;grid-template-columns:repeat(${s},1fr);gap:5px;max-width:300px;margin:0 auto">${Array(s*s).fill(0).map((_,i)=>`<div class="diff-cell" onclick="${i===t?`App.curr.ok()`:`Sound.error()`}">${i===t?d:b}</div>`).join('')}</div>`;}ok(){Sound.click();this.l++;if(this.l>this.m)App.endGame(true);else this.ld();}}
-class StroopGame { constructor(d){this.s=0;this.m=10;this.cl=[{n:'ROJO',c:'#f00'},{n:'AZUL',c:'#00f'},{n:'VERDE',c:'#0f0'}];}init(c){c.innerHTML=`<div style="text-align:center"><div id="sq" style="font-size:1.2rem"></div><div id="sw" style="font-size:3rem;font-weight:bold;margin:20px"></div><div class="choice-grid" id="so"></div></div>`;this.nx();}nx(){let t=this.cl[Math.floor(Math.random()*3)],c;do{c=this.cl[Math.floor(Math.random()*3)]}while(c.n===t.n);let m=Math.random()>.5;$('#sq').innerHTML=m?'¿Qué <b>COLOR</b>?':'¿Qué <b>DICE</b>?';$('#sw').textContent=t.n;$('#sw').style.color=c.c;let a=m?c.n:t.n,o=[a];while(o.length<3){let x=this.cl[Math.floor(Math.random()*3)].n;if(!o.includes(x))o.push(x);}$('#so').innerHTML=o.sort(()=>.5-Math.random()).map(x=>`<button class="choice-btn" onclick="App.curr.ck('${x}','${a}')">${x}</button>`).join('');}ck(v,r){if(v===r){this.s++;Sound.click();if(this.s>=this.m)App.endGame(true);else this.nx();}else{Sound.error();this.nx();}}}
 
-/* --- APP CONTROLLER --- */
+/* --- OTHER GAMES (Condensed) --- */
+class EagleGame{constructor(d){this.d=d;this.l=1;this.s=0;this.bs=2;}init(c){this.c=c;this.ld();}ld(){const sz=Math.min(8,this.bs+Math.floor(this.l/2)),tot=sz*sz,tgt=Math.floor(Math.random()*tot),h=Math.floor(Math.random()*360);let dt=Math.max(3,25-(this.l*1.5));if(this.d==='medium')dt*=.8;if(this.d==='hard')dt*=.6;const c1=`hsl(${h},80%,50%)`,c2=`hsl(${h},80%,${50+dt}%)`;$('#stat-2').textContent=`Pts: ${this.s}`;this.c.innerHTML=`<div class="eagle-grid" style="grid-template-columns:repeat(${sz},1fr);width:${Math.min(350,sz*60)}px">${Array(tot).fill(0).map((_,i)=>`<div class="eagle-cell" style="background:${i===tgt?c2:c1};aspect-ratio:1" onclick="App.curr.ck(${i===tgt})"></div>`).join('')}</div><div style="margin-top:15px;color:#999;font-size:0.9rem">Encuentra el diferente</div>`;}ck(t){if(t){this.s+=10;this.l++;Sound.click();App.addTime(1,true);this.ld();}else{this.s=Math.max(0,this.s-5);Sound.error();App.visualPenalty();}}}
+class ChimpGame{constructor(d){this.l=4;this.mx=d==='easy'?8:12;this.lv=3;this.c=1;}init(c){this.cn=c;this.ld();}ld(){this.c=1;$('#stat-2').textContent=`Nivel ${this.l} ❤️${this.lv}`;const sz=this.l<=9?5:6,p=[];while(p.length<this.l){let x=Math.floor(Math.random()*sz*sz);if(!p.includes(x))p.push(x);}this.cn.innerHTML=`<div class="chimp-grid" style="grid-template-columns:repeat(${sz},1fr);width:${sz*60}px">${Array(sz*sz).fill(0).map((_,i)=>{let k=p.indexOf(i);return k!=-1?`<div class="chimp-cell" id="ch-${i}" onclick="App.curr.ck(${i},${k+1})">${k+1}</div>`:`<div class="chimp-cell hidden"></div>`}).join('')}</div>`;}ck(i,n){if(n!=this.c){this.lv--;Sound.error();if(this.lv<=0)App.endGame(true);else{alert("¡Fallo!");this.ld();}return;}Sound.click();if(this.c===1)$$('.chimp-cell').forEach(e=>{if(e.textContent!=='1'&&!e.classList.contains('hidden'))e.classList.add('covered')});$(`#ch-${i}`).classList.add('hidden');this.c++;if(this.c>this.l){Sound.merge();this.l++;setTimeout(()=>this.ld(),500);}}get score(){return this.l;}}
+class SorterGame{constructor(d){this.s=0;this.m=d==='easy'||d==='medium'?'n':'c';}init(c){this.c=c;document.onkeydown=e=>{if(e.key==='ArrowLeft')this.ck(0);if(e.key==='ArrowRight')this.ck(1);};this.nx();}nx(){$('#stat-2').textContent=`Pts: ${this.s}`;let t,y;if(this.m==='n'){t=Math.floor(Math.random()*100);y=t%2===0?0:1;}else{let v="AEIOU",k="BCDFGHJKLMNPQRSTVWXYZ";if(Math.random()>.5){t=v[Math.floor(Math.random()*v.length)];y=0;}else{t=k[Math.floor(Math.random()*k.length)];y=1;}}this.cur=y;this.c.innerHTML=`<div class="sorter-container"><div class="sorter-card">${t}</div><div class="sorter-controls"><button class="sorter-btn btn-left" onclick="App.curr.ck(0)">${this.m==='n'?'PAR':'VOCAL'}</button><button class="sorter-btn btn-right" onclick="App.curr.ck(1)">${this.m==='n'?'IMPAR':'CONS'}</button></div></div>`;}ck(s){if(s===this.cur){this.s+=5;Sound.click();}else{this.s=Math.max(0,this.s-5);Sound.error();App.visualPenalty();}this.nx();}}
+class StopwatchGame{constructor(d){this.t=d==='hard'||d==='easy'?10:(d==='extreme'?15:5);this.lm=(d==='hard')?4:((d==='extreme')?5:999);this.s=0;this.r=0;this.at=3;}init(c){this.c=c;this.rn();}rn(){$('#stat-2').textContent=`Pts: ${this.s.toFixed(0)} | ${this.at}`;this.c.innerHTML=`<div style="text-align:center"><div class="stopwatch-target">META: ${this.t}.00s</div><div class="stopwatch-display">0.00</div><button class="stopwatch-btn ${this.r?'running':''}" onclick="App.curr.tg()">${this.r?'STOP':'START'}</button><div style="margin-top:20px;color:#888">${this.lm<99?`Oculto a ${this.lm}s`:''}</div></div>`;}tg(){if(!this.r){if(this.at<=0)return;this.r=1;this.st=Date.now();Sound.click();this.rn();this.lp();}else this.sp();}lp(){if(!this.r)return;let d=(Date.now()-this.st)/1000,dp=$('.stopwatch-display');dp.textContent=d>this.lm?"?.??":d.toFixed(2);if(d>this.lm)dp.style.color='#555';else dp.style.color='var(--accent)';requestAnimationFrame(()=>this.lp());}sp(){this.r=0;let a=(Date.now()-this.st)/1000,df=Math.abs(a-this.t);$('.stopwatch-display').textContent=a.toFixed(3);this.s+=Math.max(0,100-(df*100));this.at--;Sound.win();setTimeout(()=>{if(this.at<=0)App.endGame(true);else this.rn();},2000);}}
+class MemoryGame{constructor(d){this.c=[];this.f=[];this.l=0;this.m=0;this.sk=0;let sz=d==='easy'?4:5;if(d==='hard')sz=6;this.rw=sz===5?4:sz;let t=['🍎','🍌','🍒','🍇','🍉','🍋','🥝','🥥','🥑','🍆','🥕','🌽'];let p=[];while(p.length<(sz*this.rw)/2)p.push(t[Math.floor(Math.random()*t.length)]);this.c=[...p,...p].sort(()=>.5-Math.random());this.sz=sz;}init(c){c.innerHTML=`<div class="memory-grid" style="grid-template-columns:repeat(${this.sz},1fr)">${this.c.map((e,i)=>`<div class="memory-card" id="mc-${i}" onclick="App.curr.fl(${i})"><div class="front">${e}</div><div class="back"></div></div>`).join('')}</div>`;}fl(i){let e=$(`#mc-${i}`);if(this.l||e.classList.contains('flip'))return;e.classList.add('flip');Sound.click();this.f.push({id:i,v:this.c[i],e:e});if(this.f.length===2){this.l=1;App.moves++;if(this.f[0].v===this.f[1].v){this.m++;this.sk++;if(this.sk>=2){App.addTime(5,0);this.sk=0;}this.f=[];this.l=0;if(this.m===this.c.length/2)App.endGame(true);}else{this.sk=0;Sound.error();setTimeout(()=>{this.f.forEach(x=>x.e.classList.remove('flip'));this.f=[];this.l=0;},800);}}}}
+class MathGame{constructor(d){this.d=d;this.s=0;this.c=0;}init(c){c.innerHTML=`<div style="text-align:center"><div class="stroop-word" id="mq"></div><div class="choice-grid" id="mo"></div></div>`;this.nx();}nx(){let o=['+','-','*'],op=o[Math.floor(Math.random()*3)],a=Math.floor(Math.random()*9)+2,b=Math.floor(Math.random()*9)+2,r=op==='+'?a+b:(op==='-'?a-b:a*b);$('#mq').textContent=`${a} ${op} ${b}`;$('#stat-2').textContent=`Pts: ${this.s}`;let ch=[r];while(ch.length<4){let x=r+Math.floor(Math.random()*10)-5;if(!ch.includes(x))ch.push(x);}$('#mo').innerHTML=ch.sort(()=>.5-Math.random()).map(x=>`<button class="choice-btn" onclick="App.curr.ck(${x},${r})">${x}</button>`).join('');}ck(v,r){if(v===r){this.s+=10;this.c++;Sound.click();if(this.c%3===0)App.addTime(2,1);this.nx();}else{this.s=Math.max(0,this.s-5);this.c=0;Sound.error();App.visualPenalty();this.nx();}}}
+class AnagramGame{constructor(d){this.s=0;this.c=0;this.w=['SOL','MAR','LUZ','PAN','RIO','GATO','PATO','CASA','AGUA','MESA','ARBOL','LIBRO','PLAYA'];this.t=[];this.sl=[];this.pl=[];}init(c){this.cn=c;this.ld();document.onkeydown=e=>{if(e.key.match(/[a-z]/i)){let f=this.pl.find(x=>x.l===e.key.toUpperCase());if(f)this.cp(f.id);}if(e.key==='Backspace'){let i=this.sl.map((x,k)=>x?k:-1).filter(x=>x!==-1).pop();if(i!==undefined)this.cs(i);}};}ld(){if(!this.t.length)this.t=[...this.w].sort(()=>.5-Math.random());this.cw=this.t.pop();this.pl=this.cw.split('').sort(()=>.5-Math.random()).map((l,i)=>({l,id:i}));this.sl=Array(this.cw.length).fill(null);this.rn();}rn(){$('#stat-2').textContent=`Pts: ${this.s}`;this.cn.innerHTML=`<div class="anagram-slots">${this.sl.map((x,i)=>x?`<div class="letter-btn" onclick="App.curr.cs(${i})">${x.l}</div>`:`<div class="letter-btn empty"></div>`).join('')}</div><div class="anagram-pool">${this.pl.map(x=>`<div class="letter-btn" onclick="App.curr.cp(${x.id})">${x.l}</div>`).join('')}</div>`;}cp(id){let p=this.pl.findIndex(x=>x.id===id),s=this.sl.findIndex(x=>x===null);if(p>-1&&s>-1){this.sl[s]=this.pl[p];this.pl.splice(p,1);Sound.click();this.rn();this.chk();}}cs(i){if(this.sl[i]){this.pl.push(this.sl[i]);this.sl[i]=null;Sound.click();this.rn();}}chk(){if(!this.sl.includes(null)){if(this.sl.map(x=>x.l).join('')===this.cw){Sound.merge();this.s+=10;this.c++;if(this.c%3===0)App.addTime(3,1);setTimeout(()=>this.ld(),300);}else{Sound.error();this.s=Math.max(0,this.s-5);this.c=0;App.visualPenalty();this.pl=this.cw.split('').sort(()=>.5-Math.random()).map((l,i)=>({l,id:i}));this.sl=Array(this.cw.length).fill(null);setTimeout(()=>this.rn(),300);}}}}
+class MatrixGame{constructor(d){this.r=1;this.mx=5;this.sz=d==='easy'?3:d==='medium'?4:5;this.tc=this.sz===3?3:this.sz===4?5:7;this.ok=0;this.sl=[];this.tg=[];}init(c){this.c=c;this.ld();}ld(){if(this.r>this.mx){App.endGame(true);return;}$('#stat-2').textContent=`Ronda ${this.r}/${this.mx}`;this.c.innerHTML=`<div class="matrix-grid" style="grid-template-columns:repeat(${this.sz},1fr);width:${this.sz*60}px">${Array(this.sz*this.sz).fill(0).map((_,i)=>`<div class="matrix-cell" id="mt-${i}" onclick="App.curr.ck(${i})"></div>`).join('')}</div>`;this.tg=[];while(this.tg.length<this.tc){let x=Math.floor(Math.random()*this.sz*this.sz);if(!this.tg.includes(x))this.tg.push(x);}setTimeout(()=>{this.tg.forEach(x=>$(`#mt-${x}`).classList.add('active'));Sound.click();},500);setTimeout(()=>{this.tg.forEach(x=>$(`#mt-${x}`).classList.remove('active'));this.ok=1;this.sl=[];},2000);}ck(i){if(!this.ok||this.sl.includes(i))return;if(this.tg.includes(i)){$(`#mt-${i}`).classList.add('ok');this.sl.push(i);Sound.click();if(this.sl.length===this.tc){this.ok=0;Sound.merge();setTimeout(()=>{this.r++;this.ld();},800);}}else{$(`#mt-${i}`).classList.add('fail');Sound.error();this.ok=0;this.tg.forEach(x=>$(`#mt-${x}`).classList.add('active'));setTimeout(()=>this.ld(),1500);}}}
+class SchulteGame{constructor(d){this.sz=d==='easy'?3:d==='medium'?4:5;this.cur=1;}init(c){let n=Array.from({length:this.sz*this.sz},(_,i)=>i+1).sort(()=>.5-Math.random());$('#stat-2').textContent='Busca: 1';c.innerHTML=`<div class="schulte-grid" style="grid-template-columns:repeat(${this.sz},1fr);width:${this.sz*55}px">${n.map(x=>`<div class="schulte-cell" onclick="App.curr.ck(this,${x})">${x}</div>`).join('')}</div>`;}ck(e,v){if(v===this.cur){Sound.click();e.style.opacity=.3;e.style.pointerEvents='none';this.cur++;if(this.cur>this.sz*this.sz)App.endGame(true);else $('#stat-2').textContent=`Busca: ${this.cur}`;}else Sound.error();}}
+class Sudoku{constructor(){this.s=[];this.b=[];}init(c){c.innerHTML=`<div class="sudoku-grid" id="sb"></div><div class="numpad" id="sp"></div>`;this.gn();let b=$('#sb');this.b.forEach((r,i)=>r.forEach((v,j)=>{let d=document.createElement('div');d.className=`sudoku-cell ${v?'initial':''}`;d.textContent=v||'';d.onclick=()=>!v&&this.sl(d,i,j);b.appendChild(d);}));[1,2,3,4,5,6,7,8,9,'⌫'].forEach(x=>{let btn=document.createElement('button');btn.textContent=x;btn.onclick=()=>this.inp(x);$('#sp').appendChild(btn);});}sl(e,r,c){$$('.selected').forEach(x=>x.classList.remove('selected'));this.cr={e,r,c};e.classList.add('selected');}inp(v){if(this.cr){let n=v==='⌫'?0:v;this.cr.e.textContent=n||'';this.b[this.cr.r][this.cr.c]=n;if(n&&n!=this.s[this.cr.r][this.cr.c]){this.cr.e.classList.add('error');Sound.error();}else{this.cr.e.classList.remove('error');Sound.click();if(this.b.every((r,i)=>r.every((c,j)=>c===this.s[i][j])))App.endGame(true);}}}gn(){this.s=Array(9).fill().map(()=>Array(9).fill(0));const f=(r,c)=>{let n=[1,2,3,4,5,6,7,8,9].sort(()=>.5-Math.random());for(let x of n){let ok=1;for(let k=0;k<9;k++)if(this.s[r][k]===x||this.s[k][c]===x)ok=0;let br=Math.floor(r/3)*3,bc=Math.floor(c/3)*3;for(let i=0;i<3;i++)for(let j=0;j<3;j++)if(this.s[br+i][bc+j]===x)ok=0;if(ok){this.s[r][c]=x;if(c===8?(r===8?1:f(r+1,0)):f(r,c+1))return 1;this.s[r][c]=0;}}return 0;};f(0,0);this.b=JSON.parse(JSON.stringify(this.s));let k=30;while(k>0){let r=Math.floor(Math.random()*9),c=Math.floor(Math.random()*9);if(this.b[r][c]){this.b[r][c]=0;k--;}}}}
+class WordSearch{constructor(){this.sz=10;this.w=['JAVA','WEB','CODE','DATA','APP'];this.bd=[];this.fd=0;}init(c){c.innerHTML=`<div style="text-align:center;margin-bottom:10px">${this.w.join(' ')}</div><div class="ws-grid" style="grid-template-columns:repeat(10,1fr);width:280px" id="wb"></div>`;this.gn();let b=$('#wb');this.bd.forEach((r,i)=>r.forEach((l,j)=>{let d=document.createElement('div');d.className='ws-cell';d.textContent=l;d.dataset.r=i;d.dataset.c=j;b.appendChild(d);}));this.ev(b);}gn(){this.bd=Array(10).fill().map(()=>Array(10).fill(''));this.w.forEach(w=>{let p=0;while(!p){let d=Math.floor(Math.random()*2),r=Math.floor(Math.random()*10),c=Math.floor(Math.random()*10);if((d&&r+w.length<=10)||(!d&&c+w.length<=10)){let ok=1;for(let i=0;i<w.length;i++)if(this.bd[r+(d?i:0)][c+(d?0:i)])ok=0;if(ok){for(let i=0;i<w.length;i++)this.bd[r+(d?i:0)][c+(d?0:i)]=w[i];p=1;}}}});let a="ABCDEFGHIJKLMNOPQRSTUVWXYZ";for(let i=0;i<10;i++)for(let j=0;j<10;j++)if(!this.bd[i][j])this.bd[i][j]=a[Math.floor(Math.random()*a.length)];}ev(b){let s=0,st,ph=[];const g=e=>e.target.closest('.ws-cell')||(e.touches?document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY)?.closest('.ws-cell'):null);b.onmousedown=e=>{let c=g(e);if(c){s=1;st={r:+c.dataset.r,c:+c.dataset.c};}};b.onmousemove=e=>{if(s){let c=g(e);if(c){$$('.selected').forEach(x=>x.classList.remove('selected'));let en={r:+c.dataset.r,c:+c.dataset.c},dr=en.r-st.r,dc=en.c-st.c;ph=[];if(!dr||!dc||Math.abs(dr)===Math.abs(dc)){let mx=Math.max(Math.abs(dr),Math.abs(dc)),ir=dr?dr/Math.abs(dr):0,ic=dc?dc/Math.abs(dc):0;for(let i=0;i<=mx;i++)ph.push({r:st.r+i*ir,c:st.c+i*ic});ph.forEach(p=>$(`.ws-cell[data-r="${p.r}"][data-c="${p.c}"]`)?.classList.add('selected'));}}}};document.onmouseup=()=>{if(s){s=0;let t=ph.map(p=>this.bd[p.r][p.c]).join('');if(this.w.includes(t)){this.fd++;ph.forEach(p=>$(`.ws-cell[data-r="${p.r}"][data-c="${p.c}"]`).classList.add('found'));Sound.click();if(this.fd===this.w.length)App.endGame(true);}$$('.selected').forEach(x=>x.classList.remove('selected'));}};b.ontouchstart=b.onmousedown;b.ontouchmove=b.onmousemove;document.ontouchend=document.onmouseup;}}
+class DiffGame{constructor(){this.l=1;}init(c){this.c=c;this.ld();}ld(){let sz=Math.min(this.l+2,6),e=['😀','😎','👽'],b=e[0],d=e[1],t=Math.floor(Math.random()*sz*sz);this.c.innerHTML=`<div class="diff-grid" style="grid-template-columns:repeat(${sz},1fr);gap:4px;max-width:300px;margin:0 auto">${Array(sz*sz).fill(0).map((_,i)=>`<div class="diff-cell" onclick="${i===t?'App.curr.ok()':'Sound.error()'}">${i===t?d:b}</div>`).join('')}</div>`;}ok(){Sound.click();this.l++;if(this.l>5)App.endGame(true);else this.ld();}}
+class StroopGame{constructor(){this.s=0;}init(c){c.innerHTML=`<div style="text-align:center"><div id="sq"></div><div id="sw" style="font-size:3rem;font-weight:bold;margin:20px"></div><div class="choice-grid" id="so"></div></div>`;this.nx();}nx(){let cl=[{n:'ROJO',c:'#f00'},{n:'AZUL',c:'#00f'}],t=cl[Math.floor(Math.random()*2)],c=cl[t.n==='ROJO'?1:0],m=Math.random()>.5;$('#sq').textContent=m?'¿COLOR?':'¿DICE?';$('#sw').textContent=t.n;$('#sw').style.color=c.c;let a=m?c.n:t.n,o=[a,'VERDE'];$('#so').innerHTML=o.sort(()=>.5-Math.random()).map(x=>`<button class="choice-btn" onclick="App.curr.ck('${x}','${a}')">${x}</button>`).join('');}ck(v,r){if(v===r){this.s++;Sound.click();if(this.s>9)App.endGame(true);else this.nx();}else Sound.error();}}
+
+/* --- CONTROLLER --- */
 const App = {
     curr: null, type: null, diff: 'easy', time: 0, timer: null, moves: 0,
     list: [
         { id:'mem', t:'Memoria', i:'🧩', d:'Parejas', c:MemoryGame, mode:'time' },
         { id:'mat', t:'Cálculo', i:'✖️', d:'Arcade', c:MathGame, mode:'score' },
+        { id:'ark', t:'Arkanoid', i:'🧱', d:'Arcade', c:ArkanoidGame, mode:'score' }, // NEW
+        { id:'sld', t:'Puzzle', i:'🖼️', d:'Imagen', c:SlidingGame, mode:'time' }, // FIXED
         { id:'ana', t:'Anagrama', i:'🔡', d:'Arcade', c:AnagramGame, mode:'score' },
-        { id:'chp', t:'Chimpancé', i:'🐵', d:'Memoria', c:ChimpGame, mode:'score' }, // NEW
-        { id:'srt', t:'Clasifica', i:'⚖️', d:'Veloz', c:SorterGame, mode:'score' }, // NEW
-        { id:'stw', t:'Cronómetro', i:'⏱️', d:'Mental', c:StopwatchGame, mode:'score' }, // NEW
+        { id:'eq', t:'Ecuación', i:'🧮', d:'Emoji', c:EquationGame, mode:'score' },
+        { id:'hnt', t:'Caza', i:'🕵️', d:'Emojis', c:HuntGame, mode:'score' },
+        { id:'eag', t:'Águila', i:'🦅', d:'Visión', c:EagleGame, mode:'score' },
+        { id:'chp', t:'Chimpancé', i:'🐵', d:'Memoria', c:ChimpGame, mode:'score' },
+        { id:'srt', t:'Clasifica', i:'⚖️', d:'Veloz', c:SorterGame, mode:'score' },
+        { id:'stw', t:'Cronómetro', i:'⏱️', d:'Mental', c:StopwatchGame, mode:'score' },
         { id:'mtx', t:'Matriz', i:'🟦', d:'Patrones', c:MatrixGame, mode:'time' },
         { id:'sch', t:'Schulte', i:'🔢', d:'Atención', c:SchulteGame, mode:'time' },
         { id:'sud', t:'Sudoku', i:'✏️', d:'Lógica', c:Sudoku, mode:'time' },
@@ -781,19 +830,17 @@ const App = {
         App.moves = 0;
         $('#game-board-area').innerHTML = '';
         
-        // Init Time based on Mode
-        if(App.type.mode === 'score' && App.type.id !== 'chp' && App.type.id !== 'stw') {
-            App.time = 30; // Start Countdown for Arcade games
+        if(App.type.mode === 'score' && App.type.id !== 'chp' && App.type.id !== 'stw' && App.type.id !== 'ark') {
+            App.time = 60; 
         } else {
-            App.time = 0; // Countup or Custom logic
+            App.time = 0; 
         }
         
         App.updateTimerDisplay();
         App.curr = new App.type.c(App.diff);
         App.curr.init($('#game-board-area'));
         
-        // Timer Logic
-        if(App.type.id === 'stw') return; // Stopwatch handles its own timing
+        if(App.type.id === 'stw' || App.type.id === 'ark') return;
 
         App.timer = setInterval(() => {
             if(App.type.mode === 'score' && App.type.id !== 'chp') {
@@ -824,7 +871,7 @@ const App = {
     },
 
     updateTimerDisplay: () => {
-        if(App.type.id === 'stw') return;
+        if(App.type.id === 'stw' || App.type.id === 'ark') return;
         if (App.type.mode === 'score' && App.type.id !== 'chp') {
             $('#stat-1').textContent = `${App.time}s`;
         } else {
@@ -835,22 +882,31 @@ const App = {
     },
 
     changeDifficulty: (v) => { App.diff = v; App.run(); },
-    restartGame: () => { Sound.click(); App.run(); },
-    confirmExit: () => { if(confirm("¿Volver al menú?")) App.toMenu(); },
+    restartGame: () => { 
+        if(App.curr && App.curr.stop) App.curr.stop();
+        Sound.click(); App.run(); 
+    },
+    
+    confirmExit: (e) => { 
+        if(e) e.preventDefault();
+        if(confirm("¿Volver al menú?")) App.toMenu(); 
+    },
 
     toMenu: () => {
         clearInterval(App.timer);
+        if(App.curr && App.curr.stop) App.curr.stop();
         $('#view-game').classList.remove('active');
         $('#view-menu').classList.add('active');
         $('#modal-win').classList.remove('active');
-        if(App.curr && App.curr.stop) App.curr.stop(); // Stop loop if exists
         document.onkeydown = null; 
+        document.onmouseup = null;
+        document.ontouchend = null;
     },
 
     endGame: (win) => {
         if(!win) return;
         clearInterval(App.timer); Sound.win(); Confetti.start();
-        document.onkeydown = null; 
+        document.onkeydown = null; document.onmouseup = null; document.ontouchend = null;
         
         let scoreToSave = App.time; 
         let msg = `Tiempo: ${$('#stat-1').textContent}`;
@@ -910,3 +966,4 @@ window.onload = App.init;
 </script>
 </body>
 </html>
+
